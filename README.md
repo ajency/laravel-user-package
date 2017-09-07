@@ -42,7 +42,8 @@ This will generate the Models & migrations for new table & alter the old users t
 
 9. Then run <br/>
 	> php artisan migrate<br/>
-*<b>Caution</b> : Laravel 5.4 has an issue with migrations regarding String length, please check this before running a migration on 5.4 version*<br/>
+
+<b>Caution</b> : Laravel 5.4 has an issue with migrations regarding String length, please check this before running a migration on 5.4 version<br/>
 
 10. Set your routes & other configurations in 'aj_user_config.php'.<br/>
 
@@ -50,6 +51,7 @@ This will generate the Models & migrations for new table & alter the old users t
 	
 	return [
 		...
+		
 		'<provider>' => [
 	        'client_id' => env('<"PROVIDER">_ID'),
 	        'client_secret' => env('<"PROVIDER">_SECRET'),
@@ -61,6 +63,7 @@ This will generate the Models & migrations for new table & alter the old users t
 	
 	return [
 		...
+
 		'google' => [
 	        'client_id' => env('GOOGLE_ID'),
 	        'client_secret' => env('GOOGLE_SECRET'),
