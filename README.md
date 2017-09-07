@@ -36,12 +36,13 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 7. Open 'aj_user_migrations.php' file & add/edit the columns that the needed for your User flow.
 
 8. After assigning the Column names Run <br/>
-	> 'php artisan aj_user:migrate' <br/>
-	&nbsp; This will generate the Models & migrations for new table & alter the old users table.
+	> 'php artisan aj_user:migrate'<br/>
+
+This will generate the Models & migrations for new table & alter the old users table.
 
 9. Then run <br/>
-	> php artisan migrate <br/>
-&nbsp; *<b>Caution</b> : Laravel 5.4 has an issue with migrations regarding String length, please check this before running a migration on 5.4 version*<br/>
+	> php artisan migrate<br/>
+*<b>Caution</b> : Laravel 5.4 has an issue with migrations regarding String length, please check this before running a migration on 5.4 version*<br/>
 
 10. Set your routes & other configurations in 'aj_user_config.php'.<br/>
 
@@ -54,8 +55,12 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 	        'client_secret' => env('<"PROVIDER">_SECRET'),
 	        'redirect' => env('<"PROVIDER">_URL'),
 	    ],
+	]
 
-	    Example : 
+    Example : 
+	
+	return [
+		...
 		'google' => [
 	        'client_id' => env('GOOGLE_ID'),
 	        'client_secret' => env('GOOGLE_SECRET'),
