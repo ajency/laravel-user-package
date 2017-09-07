@@ -1,0 +1,19 @@
+{
+    "name": "ajency/laravel_user_package",
+    "license": "MIT Licence",
+    "authors": [
+        {
+            "name": "SharathSkN",
+            "email": "sharath@ajency.in"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "laravel_user_package\\": "src/"
+        }
+    },
+    "require": {
+    	"laravel/socialite": "^3.0",
+    	"illuminate/support": "~5"
+    }
+}
