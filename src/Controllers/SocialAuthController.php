@@ -12,20 +12,23 @@ use App\User;
 
 use Config;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Url;
+use Illuminate\Support\Facades\URL;
 
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 class SocialAuthController extends Controller {
     public function urlSocialAuthRedirect($provider) { // for Provider authentication -> Provider = ['Google', 'Facebook']
-
         //Session::put('url.failed', URL::previous());
         return Socialite::driver($provider)->redirect();
     }
 
     public function urlSocialAuthCallback(SocialAccountService $service, Request $request, $provider) { // after 'Provider' authentication & redirection
+        
+        /*$url = Session::get('url.failed', url('/'));
+        Session::forget('url.failed');*/
+
         if (! $request->input('code')) {
-        	return redirect();    
+        	return redirect(config('aj_user_config.social_failure_redirect_url')); // Redirect to that URL
         } else {
             $account = Socialite::driver($provider)->stateless()->user(); /* trying to use socialite on a laravel with socialite sessions deactivated */
         }
@@ -48,7 +51,7 @@ class SocialAuthController extends Controller {
             $service = new SocialAccountService();
             $data = $service->getSocialData($account, $provider);
 
-            $reponse = $this->validateUserLogin($data, $provider);
+            $reponse = validateUserLogin($data, $provider);
 
         } catch (Exception $e) {
             

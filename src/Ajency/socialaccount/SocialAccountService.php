@@ -27,7 +27,7 @@ class SocialAccountService {
 
    
 
-    public function getOrCreateUser($data) {
+    /*public function getOrCreateUser($data) {
 
         $output = new ConsoleOutput();
         $object = $this->checkIfUserExists($data, true); // Check if the EMail ID exist
@@ -77,5 +77,5 @@ class SocialAccountService {
         }
 
         return array($user, $status);
-    }
+    }*/
 }

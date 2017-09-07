@@ -45,7 +45,7 @@ class UserAuth {
     }
 
     public function checkUserFilledRequiredFields($user) { // Checks if the required Fields flag is selected or not
-    	$tables_n_cols = config('aj_config.user_required_fields');
+    	$tables_n_cols = config('aj_user_config.table_required_fields');
 
         if($user && $user->has_required_fields_filled) {
             return array("filled_required" => true, "required_fields" => []);
@@ -55,8 +55,15 @@ class UserAuth {
         }
     }
 
-    public function updateRequiredFields($user) {
-    	// Update the "Required fields" Flag to True based on whether the Required Fields in the User_DEtails table are Filled or Not
+    public function updateRequiredFields($user) { // Pass User object
+    	// Update the "Required fields" Flag to True based on whether the Required Fields in the User_Details table are Filled or Not
+
+    	if(!$user->has_required_fields_filled) {
+    		$user->has_required_fields_filled = true;
+    		$user->save();
+    	}
+
+    	return $user->has_required_fields_filled;
     }
 
     public function validateUserLogin($data, $provider) { // Validate if User is Authenticated & has all the required fields

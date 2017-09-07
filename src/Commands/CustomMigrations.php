@@ -41,7 +41,7 @@ class CustomMigrations extends Command
     {
         $op = new ConsoleOutput();
         
-        $tables = config('aj_auth_migrations');
+        $tables = config('aj_user_migrations');
         /*$tables = [
             array(
                 "table" => "users", "status" => "alter", "columns" => [

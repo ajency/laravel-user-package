@@ -13,11 +13,11 @@
 
 // Social authentication
 Route::group(['namespace' => 'AjUser'], function() {
-	Route::get('/redirect/{provider}', 'SocialAuthController@redirect');
-	Route::get('/callback/{provider}', 'SocialAuthController@callback');
+	Route::get('/redirect/{provider}', 'SocialAuthController@urlSocialAuthRedirect');
+	Route::get('/callback/{provider}', 'SocialAuthController@urlSocialAuthCallback');
 
 	Route::group(['prefix' => 'api'], function () {
-		Route::get('/login/{provider}', 'SocialAuthController@getDetails');
+		Route::get('/login/{provider}', 'SocialAuthController@apiSocialAuth');
 		Route::get('/logout/{provider}', 'SocialAuthController@logout');
 	});
 });

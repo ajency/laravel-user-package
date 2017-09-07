@@ -9,7 +9,10 @@
     ],
     "autoload": {
         "psr-4": {
-            "laravel_user_package\\": "src/"
+            "Ajency\\User\\": "src/",
+            "Ajency\\User\\Models\\": "src/models/",
+            "Ajency\\User\\Socialaccount\\": "src/Ajency/Socialaccount/",
+            "Ajency\\User\\Userauth\\": "src/Ajency/Userauth/"
         }
     },
     "require": {
