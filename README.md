@@ -95,10 +95,10 @@ This will generate the Models & migrations for new table & alter the old users t
 
 	then in .env define your Details like 
 
-	GOOGLE_ID=xxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com
-	GOOGLE_SECRET=XXXXXXXXXXXXXXXXXXXXXXX
-	GOOGLE_URL=http://<domain_name>/callback/google
+	GOOGLE_ID=xxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com<br/>
+	GOOGLE_SECRET=XXXXXXXXXXXXXXXXXXXXXXX<br/>
+	GOOGLE_URL=http://<domain_name>/callback/google<br/>
 
-	FACEBOOK_ID=xxxxxxxxxxxxxxx
-	FACEBOOK_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-	FACEBOOK_URL=http://<domain_name>/callback/facebook
+	FACEBOOK_ID=xxxxxxxxxxxxxxx<br/>
+	FACEBOOK_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br/>
+	FACEBOOK_URL=http://<domain_name>/callback/facebook<br/>
