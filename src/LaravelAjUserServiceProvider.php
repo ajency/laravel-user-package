@@ -36,6 +36,6 @@ class LaravelAjUserServiceProvider extends ServiceProvider {
      */
     public function register() {
         //
-        dd("Package successfully mapped");
+        //dd("Package successfully mapped");
     }
 }
