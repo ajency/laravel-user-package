@@ -1,7 +1,7 @@
 # Ajency Laravel User Authentication Package
 
 - Version 1.0
-- Updated on
+- Updated on 07 Sept 2017
 
 ## Description
 Contains Email Signup &amp; Social Auth, generating User Details (User Meta), User Communications Table &amp; Alter of Users Table with columns defined by user.
@@ -35,14 +35,17 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 
 7. Open 'aj_user_migrations.php' file & add/edit the columns that the needed for your User flow.
 
-8. After assigning the Column names Run 'php artisan aj_user:migrate'. This will generate the Models & migrations for new table & alter the old users table.
+8. After assigning the Column names Run <br/>
+	> 'php artisan aj_user:migrate' <br/>
+	&nbsp; This will generate the Models & migrations for new table & alter the old users table.
 
-9. Then run php artisan migrate
-*<b>Caution</b> : Laravel 5.4 has an issue with migrations regarding String length, please check this before running a migration on 5.4 version*
+9. Then run <br/>
+	> php artisan migrate <br/>
+&nbsp; *<b>Caution</b> : Laravel 5.4 has an issue with migrations regarding String length, please check this before running a migration on 5.4 version*<br/>
 
-10. Set your routes & other configurations in 'aj_user_config.php'.
+10. Set your routes & other configurations in 'aj_user_config.php'.<br/>
 
-11. Now update the 'config/services.php', with the following:
+11. Now update the 'config/services.php', with the following: <br/>
 	
 	return [
 		...
