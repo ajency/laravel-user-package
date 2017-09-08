@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace Ajency\User\Ajency\userauth;
 
 use Laravel\Socialite\Contracts\User as ProviderUser;
 
