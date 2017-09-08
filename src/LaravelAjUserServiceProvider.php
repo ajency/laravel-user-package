@@ -17,10 +17,10 @@ class LaravelAjUserServiceProvider extends ServiceProvider {
     ];
 
     public function boot() {
-        $this->loadMigrationsFrom(__DIR__ . '/migrations');
+        // $this->loadMigrationsFrom(__DIR__ . '/migrations');
         
         // $this->loadRoutesFrom(__DIR__.'/routes/web.php');
-        $this->loadRoutesFrom(__DIR__.'/routes.php');
+        // $this->loadRoutesFrom(__DIR__.'/routes.php'); -> This will merge the routes from the Package to the Application of the routes
 
         $this->publishes([
             /* Migrations file shifted */

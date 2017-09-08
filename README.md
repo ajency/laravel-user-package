@@ -6,10 +6,26 @@
 ## Description
 Contains Email Signup &amp; Social Auth, generating User Details (User Meta), User Communications Table &amp; Alter of Users Table with columns defined by user.
 
-## Installation
-1. Create a folder '/packages/ajency/user/' under root Laravel project.
-2. Clone this repo under the recently created folder.
-3. In main project, open "composer.json", and then add <br/>
+## Installation &amp; Configuration
+1. Install Socialite by  <br/>
+	> composer require laravel/socialite
+
+2. Then in config/app.php, <br/>
+
+	> 'providers' => [
+    	// Other service providers...
+
+    	Laravel\Socialite\SocialiteServiceProvider::class,
+	],
+
+	'aliases' => [
+		...
+		'Socialite' => Laravel\Socialite\Facades\Socialite::class,
+	],
+
+3. Create a folder '/packages/ajency/user/' under root Laravel project.
+4. Clone this repo under the recently created folder.
+5. In main project, open "composer.json", and then add <br/>
 	> "Ajency\\User\\": "packages/ajency/user/src"<br/>
 	
 	under the defined 'key'
@@ -26,7 +42,7 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 		}
 	}
 
-4. In config/app.php, add <br/>
+6. In config/app.php, add <br/>
 	'providers' => [
 
 		...
@@ -42,27 +58,27 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 		'AjUser' => 'Ajency\User\LaravelAjUserServiceProvider'
 	]
 
-5. Run
+7. Run
 	> composer dump-autoload
 
-6. Run 
+8. Run 
 	> php artisan vendor:publish
 
-7. Open 'aj_user_migrations.php' file & add/edit the columns that the needed for your User flow.
+9. Open 'aj_user_migrations.php' file & add/edit the columns that the needed for your User flow.
 
-8. After assigning the Column names Run <br/>
+10. After assigning the Column names Run <br/>
 	> php artisan aj_user:migrate<br/>
 
 This will generate the Models & migrations for new table & alter the old users table.
 
-9. Then run <br/>
+11. Then run <br/>
 	> php artisan migrate<br/>
 
 <b>Caution</b> : Laravel 5.4 has an issue with migrations regarding String length, please check this before running a migration on 5.4 version<br/>
 
-10. Set your routes & other configurations in 'aj_user_config.php'.<br/>
+12. Set your routes & other configurations in 'aj_user_config.php'.<br/>
 
-11. Now update the 'config/services.php', with the following: <br/>
+13. Now update the 'config/services.php', with the following: <br/>
 	
 	return [
 		...
@@ -103,7 +119,9 @@ This will generate the Models & migrations for new table & alter the old users t
 	FACEBOOK_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br/>
 	FACEBOOK_URL=http://<domain_name>/callback/facebook<br/>
 
-12. Update the routes/web.php with this <br/>
+	Similar can be done for <b>twitter</b>, <b>linkedin</b>, <b>github</b> or <b>bitbucket</b>.
+
+14. Update the routes/web.php with this <br/>
 
 	Route::group(['namespace' => 'Ajency'], function() {
 
@@ -115,5 +133,9 @@ This will generate the Models & migrations for new table & alter the old users t
 			Route::get('/logout/{provider}', 'User\SocialAuthController@logout');
 		});
 	});
+	<b>Note:</b> This will be <b>updated later</b> with Facade, so that user can directly access as
+		> AjUser::routes();
 
-13. 
+	For now, do not use <b>AjUser::routes()</b> in routes/web.php
+
+15. 
