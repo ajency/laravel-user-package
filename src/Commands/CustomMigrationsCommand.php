@@ -40,7 +40,22 @@ class CustomMigrationsCommand extends Command {
     {
         $op = new ConsoleOutput();
         
-        $tables = config('aj_user_migrations');
+        $tables = [
+            array("table" => "user_communications", "model" => "UserCommunication", "status" => "create", "columns" => [
+                    array("column" => "object_type", "type" => "string", "size" => 50, "nullable" => true),
+                    array("column" => "object_id", "type" => "integer", "nullable" => true),
+                    array("column" => "type", "type" => "string", "size" => 100, "nullable" => true, "comment" => "Email / Landline / Mobile"),
+                    array("column" => "value", "type" => "string", "size" => 250, "nullable" => true),
+                    array("column" => "is_primary", "type" => "boolean", "default" => 0),
+                    array("column" => "is_communication", "type" => "boolean", "default" => 0),
+                    array("column" => "is_verified", "type" => "boolean", "default" => 0),
+                    array("column" => "is_visible", "type" => "boolean", "default" => 0),
+                ]
+            )
+        ];
+
+        array_push($tables, config('aj_user_migrations')); // Push Custom Table arrays to Array
+
         /*$tables = [
             array(
                 "table" => "users", "status" => "alter", "columns" => [
