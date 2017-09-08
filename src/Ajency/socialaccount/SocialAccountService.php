@@ -5,6 +5,7 @@ namespace Ajency\User\Ajency\socialaccount;
 use Laravel\Socialite\Contracts\User as ProviderUser;
 
 use Illuminate\Support\Facades\Hash;
+use App\User;
 use App\UserCommunication;
 use Symfony\Component\Console\Output\ConsoleOutput;
 

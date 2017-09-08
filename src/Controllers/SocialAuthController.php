@@ -8,9 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests;
 use Socialite;
 use App\User;
-
 use Exception;
-
 use Config;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
@@ -41,7 +39,7 @@ class SocialAuthController extends Controller {
         }
 
         $data = $service->getSocialData($account, $provider);
-        $reponse = $userauthObj->validateUserLogin($data, $provider);
+        $valid_response = $userauthObj->validateUserLogin($data, $provider);
         /*
          "$response" => Returns [
             'status' -> Status of the Response, 
@@ -51,8 +49,8 @@ class SocialAuthController extends Controller {
          ]
         */
 
-        if($response["status"] == "success") {
-            if ($response_data["authentic_user"]) { // If the user is Authentic, then Log the user in
+        if($valid_response["status"] == "success") {
+            if ($valid_response["authentic_user"]) { // If the user is Authentic, then Log the user in
                 ;//auth()->login($response_data["user"]);
             }
         } else { //status == "error"
@@ -73,11 +71,11 @@ class SocialAuthController extends Controller {
             $account = Socialite::driver($provider)->userFromToken($token);
             
             $data = $service->getSocialData($account, $provider);
-            $reponse = $userauthObj->validateUserLogin($data, $provider);
+            $valid_response = $userauthObj->validateUserLogin($data, $provider);
 
-            if($response["status"] == "success") {
-                if ($response_data["authentic_user"]) { // If the user is Authentic, then
-                    if ($response_data["required_fields_filled"]) { // If the required fields are filled
+            if($valid_response["status"] == "success") {
+                if ($valid_response["authentic_user"]) { // If the user is Authentic, then
+                    if ($valid_response["required_fields_filled"]) { // If the required fields are filled
                         return response()->json(array("url" => "", "status" => 200, "message" => ""));
                     } else { // Required fields are not Filled
                         return response()->json(array("url" => "", "status" => 200, "message" => ""));

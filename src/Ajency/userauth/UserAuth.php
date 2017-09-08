@@ -6,6 +6,7 @@ use Laravel\Socialite\Contracts\User as ProviderUser;
 
 use Exception;
 
+use App\User;
 use App\UserCommunication;
 use Ajency\User\Ajency\socialaccount\SocialAccountService;
 use Symfony\Component\Console\Output\ConsoleOutput;
