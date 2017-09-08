@@ -4,7 +4,10 @@ namespace Ajency\User\Ajency\userauth;
 
 use Laravel\Socialite\Contracts\User as ProviderUser;
 
+use Exception;
+
 use App\UserCommunication;
+use Ajency\User\Ajency\socialaccount\SocialAccountService;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 class UserAuth {
@@ -37,7 +40,7 @@ class UserAuth {
     }
 
     public function isValidUser($data) { // Check if the User is Authenticated
-        if ($data && in_array($user->data["provider"], config('aj_user_config.social'))) {
+        if ($data && in_array($data["provider"], config('aj_user_config.social'))) {
             return true;
         } else {
             return false;
@@ -68,24 +71,23 @@ class UserAuth {
 
     public function validateUserLogin($data, $provider) { // Validate if User is Authenticated & has all the required fields
         $response_data = [];
+
+        $output = new ConsoleOutput;
         
         try {
-            $service = new SocialAccountService;
+            $response_data["authentic_user"] = $this->isValidUser($data);
 
-            $response_data["authentic_user"] = $this->isValidUser();
-
-            $user_object = $service->checkIfUserExists($data);
-            $response_data["user"] = $user;
+            $user_object = $this->checkIfUserExists($data);
+            $response_data["user"] = $user_object;
             
             if ($user_object) {
                 $response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($user_object);
-
+            }
             $response_data["status"] = "success";
         } catch(Exception $e) {
             $response_data["status"] = "error";
         }
 
         return $response_data;
-        }
     }
 }

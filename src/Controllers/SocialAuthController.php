@@ -28,14 +28,30 @@ class SocialAuthController extends Controller {
         Session::forget('url.failed');*/
 
         if (! $request->input('code')) {
-        	return redirect(config('aj_user_config.social_failure_redirect_url')); // Redirect to that URL
+        	return redirect(config('aj_user_config.social_failure_redirect_url')); // Redirect to Fail user defined URL
         } else {
             $account = Socialite::driver($provider)->stateless()->user(); /* trying to use socialite on a laravel with socialite sessions deactivated */
         }
 
         $data = $service->getSocialData($account, $provider);
         
-        $reponse = $this->validateUserLogin($data, $provider);
+        $reponse = $this->validateUserLogin($data, $provider); 
+        /*
+         "$response" => Returns [
+            'status' -> Status of the Response, 
+            'user' -> User Object from DB,
+            'authentic_user' -> If the Logged-In source of the User is Authentic (as in If it is "SocialAccount" then it is "Authentic" by Default; else If "Email Signup", then "Email verification" is necessary & if verified, then the account is "Authentic".),
+            'required_fields_filled' -> Flag that defines if the required fields are Filled by User or Not
+         ]
+        */
+
+        if($response["status"] == "success") {
+            if ($response_data["authentic_user"]) { // If the user is Authentic, then Log the user in
+                ;//auth()->login($response_data["user"]);
+            }
+        } else { //status == "error"
+            return redirect(config('aj_user_config.social_failure_redirect_url')); // Redirect to Fail user defined URL
+        }
     }
     
     
@@ -52,6 +68,20 @@ class SocialAuthController extends Controller {
             $data = $service->getSocialData($account, $provider);
 
             $reponse = validateUserLogin($data, $provider);
+
+            if($response["status"] == "success") {
+                if ($response_data["authentic_user"]) { // If the user is Authentic, then
+                    if ($response_data["required_fields_filled"]) { // If the required fields are filled
+                        return response()->json(array("url" => "", "status" => 200, "message" => ""));
+                    } else { // Required fields are not Filled
+                        return response()->json(array("url" => "", "status" => 200, "message" => ""));
+                    }
+                } else { // User account is not Authenticated
+                    return response()->json(array("url" => "", "status" => 403, "message" => "")); // Unauthorized
+                }
+        } else { //status == "error"
+            return response()->json(array("url" => "", "status" => 400, "message" => "")); // Bad Request
+        }
 
         } catch (Exception $e) {
             
