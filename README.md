@@ -105,7 +105,8 @@ This will generate the Models & migrations for new table & alter the old users t
 
 12. Update the routes/web.php with this <br/>
 
-	> Route::group(['namespace' => 'Ajency'], function() {
+	Route::group(['namespace' => 'Ajency'], function() {
+
 		Route::get('/redirect/{provider}', 'User\SocialAuthController@urlSocialAuthRedirect');
 		Route::get('/callback/{provider}', 'User\SocialAuthController@urlSocialAuthCallback');
 
