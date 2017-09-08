@@ -28,7 +28,7 @@ class LaravelAjUserServiceProvider extends ServiceProvider {
             __DIR__.'/config/aj_user_migrations.php' => config_path('aj_user_migrations.php'),
 
             /* Controller files shifted */
-            __DIR__.'/Controllers/SocialAuthController.php' => public_path('app/Http/Controllers/Ajency/User/SocialAuthController.php'),
+            __DIR__.'/Controllers/SocialAuthController.php' => app_path('Http/Controllers/Ajency/User/SocialAuthController.php'),
 
             /*__DIR__.'/Models/SocialAccountService.php' => public_path('app/SocialAccountService.php'),*/
 

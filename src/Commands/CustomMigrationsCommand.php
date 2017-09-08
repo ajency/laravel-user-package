@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Ajency\User\Commands;
 
 use Illuminate\Console\Command;
 
 use Symfony\Component\Console\Output\ConsoleOutput;
 
-class CustomMigrationsCommand extends Command
-{
+class CustomMigrationsCommand extends Command {
     /**
      * The name and signature of the console command.
      *
