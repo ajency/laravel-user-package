@@ -12,7 +12,7 @@
 */
 
 // Social authentication
-Route::group(['namespace' => 'AjUser'], function() {
+Route::group(['namespace' => 'Ajency\User'], function() {
 	Route::get('/redirect/{provider}', 'SocialAuthController@urlSocialAuthRedirect');
 	Route::get('/callback/{provider}', 'SocialAuthController@urlSocialAuthCallback');
 

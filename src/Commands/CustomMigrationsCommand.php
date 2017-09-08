@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 
 use Symfony\Component\Console\Output\ConsoleOutput;
 
-class CustomMigrations extends Command
+class CustomMigrationsCommand extends Command
 {
     /**
      * The name and signature of the console command.

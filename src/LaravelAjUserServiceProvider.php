@@ -10,6 +10,12 @@ class LaravelAjUserServiceProvider extends ServiceProvider {
      *
      * @return void
      */
+
+    protected $commands = [
+        //Commands\CustomMigrations::class,
+        "Ajency\User\Commands\CustomMigrationsCommand",
+    ];
+
     public function boot() {
         $this->loadMigrationsFrom(__DIR__ . '/migrations');
         
@@ -27,6 +33,9 @@ class LaravelAjUserServiceProvider extends ServiceProvider {
             /*__DIR__.'/Models/SocialAccountService.php' => public_path('app/SocialAccountService.php'),*/
 
         ]);
+
+        /* Command to Generate Model & Migration files in Application level */
+        $this->commands($this->commands);
     }
 
     /**
