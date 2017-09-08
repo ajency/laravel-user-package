@@ -12,7 +12,8 @@
             "Ajency\\User\\": "src/",
             "Ajency\\User\\Models\\": "src/models/",
             "Ajency\\User\\Socialaccount\\": "src/Ajency/Socialaccount/",
-            "Ajency\\User\\Userauth\\": "src/Ajency/Userauth/"
+            "Ajency\\User\\Userauth\\": "src/Ajency/Userauth/",
+            "Ajency\\User\\Commands\\": "src/Commands/"
         }
     },
     "require": {
