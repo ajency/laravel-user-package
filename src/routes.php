@@ -12,12 +12,12 @@
 */
 
 // Social authentication
-Route::group(['namespace' => 'Ajency\User'], function() {
-	Route::get('/redirect/{provider}', 'SocialAuthController@urlSocialAuthRedirect');
-	Route::get('/callback/{provider}', 'SocialAuthController@urlSocialAuthCallback');
+Route::group(['namespace' => 'Ajency'], function() {
+	Route::get('/redirect/{provider}', 'User\SocialAuthController@urlSocialAuthRedirect');
+	Route::get('/callback/{provider}', 'User\SocialAuthController@urlSocialAuthCallback');
 
 	Route::group(['prefix' => 'api'], function () {
-		Route::get('/login/{provider}', 'SocialAuthController@apiSocialAuth');
-		Route::get('/logout/{provider}', 'SocialAuthController@logout');
+		Route::get('/login/{provider}', 'User\SocialAuthController@apiSocialAuth');
+		Route::get('/logout/{provider}', 'User\SocialAuthController@logout');
 	});
 });

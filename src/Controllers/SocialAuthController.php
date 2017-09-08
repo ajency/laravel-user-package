@@ -7,14 +7,20 @@ use App\Http\Controllers\Controller;
 
 use App\Http\Requests;
 use Socialite;
-use App\SocialAccountService;
 use App\User;
+
+use Exception;
 
 use Config;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 
+
 use Symfony\Component\Console\Output\ConsoleOutput;
+
+/* Plugin Access Headers */
+use Ajency\User\Ajency\socialaccount\SocialAccountService;
+use Ajency\User\Ajency\userauth\UserAuth;
 
 class SocialAuthController extends Controller {
     public function urlSocialAuthRedirect($provider) { // for Provider authentication -> Provider = ['Google', 'Facebook']
@@ -26,6 +32,7 @@ class SocialAuthController extends Controller {
         
         /*$url = Session::get('url.failed', url('/'));
         Session::forget('url.failed');*/
+        $userauthObj = new UserAuth;
 
         if (! $request->input('code')) {
         	return redirect(config('aj_user_config.social_failure_redirect_url')); // Redirect to Fail user defined URL
@@ -34,8 +41,7 @@ class SocialAuthController extends Controller {
         }
 
         $data = $service->getSocialData($account, $provider);
-        
-        $reponse = $this->validateUserLogin($data, $provider); 
+        $reponse = $userauthObj->validateUserLogin($data, $provider);
         /*
          "$response" => Returns [
             'status' -> Status of the Response, 
@@ -58,16 +64,16 @@ class SocialAuthController extends Controller {
 
     public function apiSocialAuth(Request $request, $provider) {
         try {
-            $output = new ConsoleOutput();
+            //$output = new ConsoleOutput();
 
+            $userauthObj = new UserAuth;
+            $service = new SocialAccountService;
 
             $token = $request->token;//"ya29.Glu3BER1pDE1i7Y77B7IiDo_He-Z-zcsZqs193WTR57qTGO4Lw3a2XnGjJO_PLjGGs4H-Qvjexh_KdEuNCWL1SjRfyQoiXe0oJfbBJg3BC6LL22FE1Onwjfm7GC9";
             $account = Socialite::driver($provider)->userFromToken($token);
             
-            $service = new SocialAccountService();
             $data = $service->getSocialData($account, $provider);
-
-            $reponse = validateUserLogin($data, $provider);
+            $reponse = $userauthObj->validateUserLogin($data, $provider);
 
             if($response["status"] == "success") {
                 if ($response_data["authentic_user"]) { // If the user is Authentic, then

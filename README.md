@@ -102,3 +102,17 @@ This will generate the Models & migrations for new table & alter the old users t
 	FACEBOOK_ID=xxxxxxxxxxxxxxx<br/>
 	FACEBOOK_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br/>
 	FACEBOOK_URL=http://<domain_name>/callback/facebook<br/>
+
+12. Update the routes/web.php with this <br/>
+
+	> Route::group(['namespace' => 'Ajency'], function() {
+		Route::get('/redirect/{provider}', 'User\SocialAuthController@urlSocialAuthRedirect');
+		Route::get('/callback/{provider}', 'User\SocialAuthController@urlSocialAuthCallback');
+
+		Route::group(['prefix' => 'api'], function () {
+			Route::get('/login/{provider}', 'User\SocialAuthController@apiSocialAuth');
+			Route::get('/logout/{provider}', 'User\SocialAuthController@logout');
+		});
+	});
+
+13. 
