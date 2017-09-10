@@ -92,6 +92,55 @@ class UserAuth {
         return $response_data;
     }
 
+    public function updateOrCreateUserComm($data) {
+    	$response_data = [];
+
+    	if (isset($data['email']) || isset($data['contact'])) { // If contact or Email is defined in the plugin, then mark this fields as 'True' as this is User's 1st contact
+            $types = [];
+
+            (isset($data['email']) && $data['email']) ? array_push($types, 'email') : '';// If email field exist & the value is not NULL
+            (isset($data['contact']) && $data['contact']) ? array_push($types, 'contact') : '';// If contact field exist & the value is not NULL
+
+            foreach ($types as $key => $type) { // Loop through Communication types
+            	$comm = UserCommunication::where('value','=',$data[$type]);
+            	if($comm->count() > 0) { // Update Query
+            		/*$comm = $comm->update([
+            			'is_primary' => $data["is_primary"], 
+            			'is_communication' => $data["is_communication"], 
+            			'is_verified' => $data["is_verified"], 
+            			'is_visible' => $data["is_visible"]
+            		]);*/
+
+            		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
+            			$comm[$datak] = $datav;
+            		}
+
+            		$comm->save();
+            	} else { // Insert Query
+	                $comm = new UserCommunication;
+	                $comm->object_id = $user->id;
+	                $comm->object_type = 'user';
+
+	                $comm->type = $type;
+	                $comm->value = $data[$type];
+	                
+	                $comm->is_primary = isset($data["is_primary"]) ? $data['is_primary'] : false;
+	                $comm->is_communication = isset($data["is_communication"]) ? $data['is_communication'] : false;
+	                $comm->is_verified = isset($data["is_verified"]) ? $data['is_verified'] : false;
+	                $comm->is_visible = isset($data["is_visible"]) ? $data['is_visible'] : false;
+	    
+	                $comm->save();
+            	}
+            }
+
+            $response_data = array("status" => "success", "data" => $comm);
+        } else { // Else required parameters are not passed
+        	$response_data = array("status" => "error", "message" => "Please pass the following Required parameters: 'email', 'contact', 'object_id' & 'object_type'.");
+        }
+
+        return $response_data;
+    }
+
     public function getOrCreateUser($data) {
 
         $output = new ConsoleOutput();
@@ -109,28 +158,7 @@ class UserAuth {
             $user->status = in_array($data["provider"], $status_active_provider) ? "active" : "inactive"; // If provider is in the List, then activate, else Inactive
             $user->save();
 
-            if (isset($data['email']) || isset($data['contact'])) { // If contact or Email is defined in the plugin, then mark this fields as 'True' as this is User's 1st contact
-                $types = [];
-
-                (isset($data['email']) && $data['email']) ? array_push($types, 'email') : '';// If email field exist & the value is not NULL
-                (isset($data['contact']) && $data['contact']) ? array_push($types, 'contact') : '';// If contact field exist & the value is not NULL
-
-                foreach ($types as $key => $type) { // Loop through Communication types
-                    $comm = new UserCommunication;
-                    $comm->object_id = $user->id;
-                    $comm->object_type = 'user';
-
-                    $comm->type = $type;
-                    $comm->value = $data[$type];
-                    
-                    $comm->is_primary = true;
-                    $comm->is_communication = true;
-                    $comm->is_verified = true;
-                    $comm->is_visible = true;
-        
-                    $comm->save();
-                }
-            }
+            $this->updateOrCreateUserComm($data);
 
             $status = "present";
         } else { // This email exist
