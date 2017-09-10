@@ -51,7 +51,9 @@ class SocialAuthController extends Controller {
 
         if($valid_response["status"] == "success") {
             if ($valid_response["authentic_user"]) { // If the user is Authentic, then Log the user in
-                ;//auth()->login($response_data["user"]);
+                if(!$valid_response["user"]) { // If $valid_response["user"] == None, then Create the User
+                    $user = $userauthObj->getOrCreateUser($data);
+                }
             }
         } else { //status == "error"
             return redirect(config('aj_user_config.social_failure_redirect_url')); // Redirect to Fail user defined URL
@@ -75,6 +77,10 @@ class SocialAuthController extends Controller {
 
             if($valid_response["status"] == "success") {
                 if ($valid_response["authentic_user"]) { // If the user is Authentic, then
+                    if(!$valid_response["user"]) { // If $valid_response["user"] == None, then Create the User
+                        $user = $userauthObj->getOrCreateUser($data);
+                    }
+
                     if ($valid_response["required_fields_filled"]) { // If the required fields are filled
                         return response()->json(array("url" => "", "status" => 200, "message" => ""));
                     } else { // Required fields are not Filled
