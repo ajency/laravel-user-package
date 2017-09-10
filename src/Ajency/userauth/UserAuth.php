@@ -95,11 +95,11 @@ class UserAuth {
     public function updateOrCreateUserComm($data) {
     	$response_data = [];
 
-    	if (isset($data['email']) || isset($data['contact'])) { // If contact or Email is defined in the plugin, then mark this fields as 'True' as this is User's 1st contact
+    	if (isset($data['email']) || isset($data['mobile'] || isset($data['landline'])) { // If mobile, landline or Email is defined in the plugin, then mark this fields as 'True' as this is User's 1st contact
             $types = [];
 
             (isset($data['email']) && $data['email']) ? array_push($types, 'email') : '';// If email field exist & the value is not NULL
-            (isset($data['contact']) && $data['contact']) ? array_push($types, 'contact') : '';// If contact field exist & the value is not NULL
+            (isset($data['contact']) && isset($data['contact']) && $data['contact']) ? array_push($types, 'contact') : '';// If contact field exist & the value is not NULL
 
             foreach ($types as $key => $type) { // Loop through Communication types
             	$comm = UserCommunication::where('value','=',$data[$type]);
@@ -111,8 +111,11 @@ class UserAuth {
             			'is_visible' => $data["is_visible"]
             		]);*/
 
+            		// unset($data[$type]); // Remove the Email / Contact from the 
             		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
-            			$comm[$datak] = $datav;
+            			if(!in_array($datak, $types)) { // If the key is not Email or Contact, then UPDATE the value
+            				$comm[$datak] = $datav;
+            			}
             		}
 
             		$comm->save();
@@ -121,7 +124,8 @@ class UserAuth {
 	                $comm->object_id = $user->id;
 	                $comm->object_type = 'user';
 
-	                $comm->type = $type;
+	                // If type == contact then ("contact_type" exist then $data["contact_type"] else "mobile") Else "Email" / $type
+	                $comm->type = ($type == "contact") ? (isset($data["contact_type"]) ? $data["contact_type"]: "mobile") : $type; 
 	                $comm->value = $data[$type];
 	                
 	                $comm->is_primary = isset($data["is_primary"]) ? $data['is_primary'] : false;

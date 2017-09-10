@@ -21,6 +21,7 @@ class SocialAccountService {
 
         if (property_exists($providerUser, "contact")) {//(isset($providerUser["contact"]))
             $response_data["contact"] = $providerUser->contact;
+            $response_data["contact_type"] = "mobile";
         }
 
         return $response_data; // JSON Response
