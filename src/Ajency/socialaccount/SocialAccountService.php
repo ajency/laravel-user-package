@@ -16,7 +16,12 @@ class SocialAccountService {
             "name" => $providerUser->name, 
             "email" => $providerUser->email, 
             "password" => Hash::make(str_random(10)), 
-            "provider" => $provider
+            "provider" => $provider,
+            "is_primary" => true,
+            "is_communication" => true,
+            "is_verified" => true,
+            "is_visible" => true
+
         );
 
         if (property_exists($providerUser, "contact")) {//(isset($providerUser["contact"]))
