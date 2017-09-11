@@ -98,12 +98,12 @@ class UserAuth {
     	if (isset($data['email']) || isset($data['mobile'] || isset($data['landline'])) { // If mobile, landline or Email is defined in the plugin, then mark this fields as 'True' as this is User's 1st contact
             $types = [];
 
-            (isset($data['email']) && $data['email']) ? array_push($types, 'email') : '';// If email field exist & the value is not NULL
-            (isset($data['contact']) && isset($data['contact']) && $data['contact']) ? array_push($types, 'contact') : '';// If contact field exist & the value is not NULL
+            (isset($data['email']) && $data['email']) ? array_push($types, 'email') : ''; // If email field exist & the value is not NULL
+            (isset($data['contact']) && isset($data['contact']) && $data['contact']) ? array_push($types, 'contact') : ''; // If contact field exist & the value is not NULL
 
             foreach ($types as $key => $type) { // Loop through Communication types
-            	$comm = UserCommunication::where('value','=',$data[$type]);
-            	if($comm->count() > 0) { // Update Query
+            	$comm = UserCommunication::where('value','=',$data[$type]); // Get the UserComm object
+            	if($comm->count() > 0) { // Update Query, if the count is greater than ZERO
             		/*$comm = $comm->update([
             			'is_primary' => $data["is_primary"], 
             			'is_communication' => $data["is_communication"], 
@@ -113,7 +113,7 @@ class UserAuth {
 
             		// unset($data[$type]); // Remove the Email / Contact from the 
             		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
-            			if(!in_array($datak, $types)) { // If the key is not Email or Contact, then UPDATE the value
+            			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
             				$comm[$datak] = $datav;
             			}
             		}

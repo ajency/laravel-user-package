@@ -54,7 +54,11 @@ class CustomMigrationsCommand extends Command {
             )
         ];
 
-        array_push($tables, config('aj_user_migrations')); // Push Custom Table arrays to Array
+        foreach (config('aj_user_migrations') as $tableKey => $tableVal) {
+            array_push($tables, $tableVal); // Push Custom Table config array to Default Table Array
+        }
+        
+        // array_unshift($tables, config('aj_user_migrations')); // Prepend Default $tables to the Config Table array
 
         /*$tables = [
             array(
