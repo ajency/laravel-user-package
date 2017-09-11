@@ -33,13 +33,14 @@ class SocialAuthController extends Controller {
         $userauthObj = new UserAuth;
 
         if (! $request->input('code')) {
-        	return redirect(config('aj_user_config.social_failure_redirect_url')); // Redirect to Fail user defined URL
+        	return redirect(config('aj_user_config.social_failure_redirect_url')."?login=true&message=social_permission_denied"); // Redirect to Fail user defined URL
         } else {
             $account = Socialite::driver($provider)->stateless()->user(); /* trying to use socialite on a laravel with socialite sessions deactivated */
         }
 
         $data = $service->getSocialData($account, $provider);
         $valid_response = $userauthObj->validateUserLogin($data["user"], $provider);
+        
         /*
          "$response" => Returns [
             'status' -> Status of the Response, 
@@ -51,12 +52,20 @@ class SocialAuthController extends Controller {
 
         if($valid_response["status"] == "success") {
             if ($valid_response["authentic_user"]) { // If the user is Authentic, then Log the user in
-                if(!$valid_response["user"]) { // If $valid_response["user"] == None, then Create the User
-                    $user = $userauthObj->updateOrCreateUser($data);
+                if(!$valid_response["user"]) { // If $valid_response["user"] == None, then Create/Update the User, User Details & User Communications
+                    $user_resp = $userauthObj->updateOrCreateUser($social_data["user"], [], $social_data["user_comm"]);
+                } else {
+                    $user_resp = $userauthObj->getUserData($valid_response["user"]);
+                }
+
+                if($user_resp["status"] == "success") {
+                    return ;
+                } else {
+                    return redirect(config('aj_user_config.social_failure_redirect_url')."?message=");
                 }
             }
         } else { //status == "error"
-            return redirect(config('aj_user_config.social_failure_redirect_url')); // Redirect to Fail user defined URL
+            return redirect(config('aj_user_config.social_failure_redirect_url')."?login=true&message=".$valid_response["message"]); // Redirect to Fail user defined URL
         }
     }
     
@@ -77,17 +86,23 @@ class SocialAuthController extends Controller {
 
             if($valid_response["status"] == "success") {
                 if ($valid_response["authentic_user"]) { // If the user is Authentic, then
-                    if(!$valid_response["user"]) { // If $valid_response["user"] == None, then Create the User
-                        $user = $userauthObj->updateOrCreateUser($data);
+                    if(!$valid_response["user"]) { // If $valid_response["user"] == None, then Create/Update the User, User Details & User Communications
+                        $user_resp = $userauthObj->updateOrCreateUser($social_data["user"], [], $social_data["user_comm"]);
+                    } else {
+                        $user_resp = $userauthObj->getUserData($valid_response["user"]);
                     }
 
-                    if ($valid_response["required_fields_filled"]) { // If the required fields are filled
-                        return response()->json(array("next_url" => "", "status" => 200, "message" => "", "data" => "")); // Data should have JSON of USer, User Details & User Communication
-                    } else { // Required fields are not Filled
-                        return response()->json(array("next_url" => "", "status" => 200, "message" => "", "data" => ""));
+                    if($user_resp["status"] == "success") {
+                        if ($valid_response["required_fields_filled"]) { // If the required fields are filled
+                            return response()->json(array("next_url" => "", "status" => 200, "message" => "", "data" => "")); // Data should have JSON of USer, User Details & User Communication
+                        } else { // Required fields are not Filled
+                            return response()->json(array("next_url" => "", "status" => 200, "message" => "", "data" => ""));
+                        }
+                    } else {
+                        return response()->json(array("next_url" => "", "status" => 400, "message" => "", "data" => ""));
                     }
                 } else { // User account is not Authenticated
-                    return response()->json(array("next_url" => "", "status" => 403, "message" => "")); // Unauthorized
+                    return response()->json(array("next_url" => "", "status" => 403, "message" => $valid_response["message"])); // Unauthorized
                 }
         } else { //status == "error"
             return response()->json(array("next_url" => "", "status" => 400, "message" => "")); // Bad Request

@@ -15,15 +15,20 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 class UserAuth {
 	public function checkIfUserExists($data) {//, $getObject=false) {
         $user = NULL;
-
-        if (isset($data["email"])) {
-            $comm = UserCommunication::where('value','=',$data['email'])->first(); // Check if this email ID exist in the User Communication DB
-            $user = User::where('id', '=', $comm->object_id)->first();
-        } else if (isset($data["contact"])) {
-            $comm = UserCommunication::where('value','=',$data['contact'])->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
-            $user = User::where('id', '=', $comm->object_id)->first();
-        } else {
-            $user = User::where('email', '=', $data['username'])->first(); // Check if this Username exist in the User DB
+        
+        try {
+            if (isset($data["email"])) {
+                $comm = UserCommunication::where('value','=',$data['email'])->first(); // Check if this email ID exist in the User Communication DB
+                $user = User::where('id', '=', $comm->object_id)->first();
+            } else if (isset($data["contact"])) {
+                $comm = UserCommunication::where('value','=',$data['contact'])->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
+                $user = User::where('id', '=', $comm->object_id)->first();
+            } else {
+                $user = User::where('email', '=', $data['username'])->first(); // Check if this Username exist in the User DB
+            }
+        } catch (Exception $e) {
+            $user = NULL;
+            $comm = NULL;
         }
         /*
             if($comm) {
@@ -38,6 +43,7 @@ class UserAuth {
                 return $exist;
             }
         */
+        
         return $user;
     }
 
@@ -78,14 +84,24 @@ class UserAuth {
         
         try {
             $response_data["authentic_user"] = $this->isValidUser($data);
-
             $user_object = $this->checkIfUserExists($data);
             $response_data["user"] = $user_object;
             
-            if ($user_object) {
+            if ($user_object && $provider == $user_object->signup_source && $user_object->status == "active") { // If user_object is Received & the Signup source provider is same then check if the required Fields are filled
                 $response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($user_object);
+                $response_data["status"] = "success";
+            } else {
+                $response_data["status"] = "error";
+
+                if ($user_object && $provider !== $user_object->signup_source) { // If User_Object exist & the Signup source is not correct, then return message with "Login with X Source"
+                    $response_data["message"] = "is_" . $user_object->signup_source . "_account";
+                } else if($user_object && $user_object->status == "suspended") {
+                    $response_data["message"] = "account_suspended";
+                } else if($user_object && $user_object->status == "inactive") {
+                    $response_data["message"] = "email_confirm";
+                }
             }
-            $response_data["status"] = "success";
+
         } catch(Exception $e) {
             $response_data["status"] = "error";
         }
@@ -96,6 +112,8 @@ class UserAuth {
     public function updateOrCreateUserComm($user_obj, $data) {
     	$response_data = [];
 
+        $output = new ConsoleOutput;
+
     	if (isset($data['email']) || isset($data['contact'])) { // If mobile, landline or Email is defined in the plugin, then mark this fields as 'True' as this is User's 1st contact
             $types = [];
 
@@ -103,7 +121,7 @@ class UserAuth {
             (isset($data['contact']) && isset($data['contact']) && $data['contact']) ? array_push($types, 'contact') : ''; // If contact field exist & the value is not NULL
 
             foreach ($types as $key => $type) { // Loop through Communication types
-            	$comm = UserCommunication::where('value','=',$data[$type]); // Get the UserComm object
+                $comm = UserCommunication::where('value','=',$data[$type]); // Get the UserComm object
             	if($comm->count() > 0) { // Update Query, if the count is greater than ZERO
             		/*$comm = $comm->update([
             			'is_primary' => $data["is_primary"], 
@@ -119,7 +137,7 @@ class UserAuth {
             			}
             		}
 
-            		$comm->save();
+                    $comm->save();
             	} else { // Insert Query
 	                $comm = new UserCommunication;
 	                $comm->object_id = $user_obj->id;
@@ -192,34 +210,36 @@ class UserAuth {
     }
 
     public function updateOrCreateUser($user_data, $detail_data = [], $comm_data = []) {
+        $detail_response = NULL; $comm_response = NULL;
 
     	try {
 	        $output = new ConsoleOutput();
 	        $object = $this->checkIfUserExists($user_data); // Check if the EMail ID exist
-	        $status = "error";
+            $status = "success";
 	        $user_required_params = ['name', 'username', 'password', 'provider', 'status'];
+
 	        $status_active_provider = ["google", "facebook"];
 
 	        if (!$object) { // if the email & info is not present in the list, then create new
-	            $user = new User;
-	            $user->name = $user_data["name"];
-	            $user->email = $user_data["username"];
-	            $user->password = $user_data["password"];
-	            $user->signup_source = $user_data['provider'];
-	            $user->status = in_array($user_data["provider"], $status_active_provider) ? "active" : "inactive"; // If provider is in the List, then activate, else Inactive
+                $user = new User;
 
-	            foreach ($user_required_params as $keyParam => $valueParam) {
+                $user->name = $user_data["name"];
+	            $user->email = $user_data["username"];
+                $user->password = $user_data["password"];
+                $user->signup_source = $user_data['provider'];
+                $user->status = in_array($user_data["provider"], $status_active_provider) ? "active" : "inactive"; // If provider is in the List, then activate, else Inactive
+                
+                /*foreach ($user_required_params as $keyParam => $valueParam) {
 	            	unset($user_data[$value_param]); // Remove other fields & it's value from JSON data
 	            }
 
 	            foreach($user_data as $datak => $datav) { // Update all the fields defined in the JSON data
-        			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
-        				$user[$datak] = $datav;
-        			}
-        		}
+                    if(!in_array($datak, $user_required_params)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
+                        $user[$datak] = $datav;
+                    }
+        		}*/
 
 	            $user->save();
-
 	        } else { // This User exist
 	            
 	            $user = User::find($object["data"]->object_id);
@@ -234,7 +254,7 @@ class UserAuth {
 	            $user->status = isset($user_data["status"]) ? $user_data["status"] : in_array($user_data["provider"], $status_active_provider) ? "active" : "inactive";*/
 
 	            foreach($user_data as $datak => $datav) { // Update all the fields defined in the JSON data
-        			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
+        			if(!in_array($datak, $user_required_params)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
         				$user[$datak] = $datav;
         			}
         		}
@@ -243,15 +263,16 @@ class UserAuth {
 	        }
             if(sizeof($detail_data) > 0) {
             	$detail_response = $this->updateOrCreateUserDetails($user, $detail_data);
+                $status = ($detail_response["status"] == "success") ? $status : "error";
             }
 
             if(sizeof($comm_data) > 0) {
-            	$comm_response = $this->updateOrCreateUserComm($user, $comm_data);
+                $comm_response = $this->updateOrCreateUserComm($user, $comm_data);
+                $status = ($comm_response["status"] == "success") ? $status : "error";
             }
 
-        	$status = ($comm_response["status"] == "success" && $detail_response["status"] == "success") ? "success" : "error";
 	    } catch(Exception $e) {
-	    	$status = "error";
+            $status = "error";
 	    }
 
         return array("user" => $user, "user_details" => $detail_response["data"], "user_comm" => $comm_response["data"], "status" => $status);
