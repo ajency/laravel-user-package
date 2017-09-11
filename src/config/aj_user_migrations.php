@@ -25,7 +25,7 @@ return [
 
     array(
         "table" => "users", "status" => "alter", "columns" => [
-            array("column" => "type", "type" => "string", "size" => 100, "comment" => "Internal / Registered (has password) / Guest (no password)"),
+            array("column" => "type", "type" => "string", "size" => 100, "nullable" => true, "comment" => "Internal / Registered (has password) / Guest (no password)"),
             array("column" => "has_required_fields_filled", "type" => "boolean", "default" => 0),
             array("column" => "status", "type" => "string", "size" => 50, "nullable" => true),
             array("column" => "creation_date", "type" => "datetime", "nullable" => true),//, "default" => ),

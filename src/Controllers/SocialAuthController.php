@@ -13,7 +13,6 @@ use Config;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 
-
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 /* Plugin Access Headers */
@@ -31,15 +30,15 @@ class SocialAuthController extends Controller {
         /*$url = Session::get('url.failed', url('/'));
         Session::forget('url.failed');*/
         $userauthObj = new UserAuth;
-
+        $output = new ConsoleOutput();
         if (! $request->input('code')) {
-        	return redirect(config('aj_user_config.social_failure_redirect_url')."?login=true&message=social_permission_denied"); // Redirect to Fail user defined URL
+            return redirect(config('aj_user_config.social_failure_redirect_url')."?login=true&message=social_permission_denied"); // Redirect to Fail user defined URL
         } else {
             $account = Socialite::driver($provider)->stateless()->user(); /* trying to use socialite on a laravel with socialite sessions deactivated */
         }
 
-        $data = $service->getSocialData($account, $provider);
-        $valid_response = $userauthObj->validateUserLogin($data["user"], $provider);
+        $social_data = $service->getSocialData($account, $provider);
+        $valid_response = $userauthObj->validateUserLogin($social_data["user"], $provider);
         
         /*
          "$response" => Returns [
@@ -50,12 +49,16 @@ class SocialAuthController extends Controller {
          ]
         */
 
-        if($valid_response["status"] == "success") {
+        $output->writeln(json_encode($valid_response));
+
+        if($valid_response["status"] == "success" || $valid_response["message"] == "no_account") {
             if ($valid_response["authentic_user"]) { // If the user is Authentic, then Log the user in
-                if(!$valid_response["user"]) { // If $valid_response["user"] == None, then Create/Update the User, User Details & User Communications
-                    $user_resp = $userauthObj->updateOrCreateUser($social_data["user"], [], $social_data["user_comm"]);
-                } else {
+                $output->writeln("asdasd");
+                if($valid_response["user"]) { // If $valid_response["user"] == None, then Create/Update the User, User Details & User Communications
                     $user_resp = $userauthObj->getUserData($valid_response["user"]);
+                } else {
+                    $output->writeln("as;ohas");
+                    $user_resp = $userauthObj->updateOrCreateUser($social_data["user"], [], $social_data["user_comm"]);
                 }
 
                 if($user_resp["status"] == "success") {
@@ -81,8 +84,8 @@ class SocialAuthController extends Controller {
             $token = $request->token;//"ya29.Glu3BER1pDE1i7Y77B7IiDo_He-Z-zcsZqs193WTR57qTGO4Lw3a2XnGjJO_PLjGGs4H-Qvjexh_KdEuNCWL1SjRfyQoiXe0oJfbBJg3BC6LL22FE1Onwjfm7GC9";
             $account = Socialite::driver($provider)->userFromToken($token);
             
-            $data = $service->getSocialData($account, $provider);
-            $valid_response = $userauthObj->validateUserLogin($data, $provider);
+            $social_data = $service->getSocialData($account, $provider);
+            $valid_response = $userauthObj->validateUserLogin($social_data["user"], $provider);
 
             if($valid_response["status"] == "success") {
                 if ($valid_response["authentic_user"]) { // If the user is Authentic, then

@@ -99,6 +99,8 @@ class UserAuth {
                     $response_data["message"] = "account_suspended";
                 } else if($user_object && $user_object->status == "inactive") {
                     $response_data["message"] = "email_confirm";
+                } else {
+                    $response_data["message"] = "no_account";
                 }
             }
 
@@ -219,8 +221,7 @@ class UserAuth {
 	        $user_required_params = ['name', 'username', 'password', 'provider', 'status'];
 
 	        $status_active_provider = ["google", "facebook"];
-
-	        if (!$object) { // if the email & info is not present in the list, then create new
+            if (!$object) { // if the email & info is not present in the list, then create new
                 $user = new User;
 
                 $user->name = $user_data["name"];
@@ -238,11 +239,9 @@ class UserAuth {
                         $user[$datak] = $datav;
                     }
         		}*/
-
-	            $user->save();
+                $user->save();
 	        } else { // This User exist
-	            
-	            $user = User::find($object["data"]->object_id);
+	           $user = User::find($object["data"]->object_id);
         		
         		if(isset($user_data['username'])) {
 	            	$user->email = $user_data["username"];
@@ -275,7 +274,7 @@ class UserAuth {
             $status = "error";
 	    }
 
-        return array("user" => $user, "user_details" => $detail_response["data"], "user_comm" => $comm_response["data"], "status" => $status);
+        return array("user" => $user, "user_details" => isset($detail_response["data"]) ? $detail_response["data"] : $detail_response, "user_comm" => isset($comm_response["data"]) ? $comm_response["data"] : $comm_response, "status" => $status);
     }
 
     public function getUserData($user_data, $is_id = false) { // Get all the User related details 
