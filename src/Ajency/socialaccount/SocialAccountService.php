@@ -11,22 +11,30 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 class SocialAccountService {
     public function getSocialData(ProviderUser $providerUser, $provider) {
-        $response_data = array(
-            "username" => ((string)$providerUser->id).'@fnb'.strtolower($provider).".in", 
-            "name" => $providerUser->name, 
-            "email" => $providerUser->email, 
-            "password" => Hash::make(str_random(10)), 
-            "provider" => $provider,
-            "is_primary" => true,
-            "is_communication" => true,
-            "is_verified" => true,
-            "is_visible" => true
+        $email_domain = config('aj_user_config.social_email_domain');
 
+        $response_data = array(
+            "user" => array(
+                "username" => ((string)$providerUser->id).'@'.$email_domain.strtolower($provider).".in", 
+                "name" => $providerUser->name, 
+                "password" => Hash::make(str_random(10)), 
+                "provider" => $provider,
+                "email" => $providerUser->email,
+            ),
+            "user_comm" => array(
+                "email" => $providerUser->email, 
+                "is_primary" => true,
+                "is_communication" => true,
+                "is_verified" => true,
+                "is_visible" => true
+            )
         );
 
         if (property_exists($providerUser, "contact")) {//(isset($providerUser["contact"]))
-            $response_data["contact"] = $providerUser->contact;
-            $response_data["contact_type"] = "mobile";
+            $response_data["user"]["contact"] = $providerUser->contact;
+            $response_data["user"]["contact_type"] = "mobile";
+            $response_data["user_comm"]["contact"] = $providerUser->contact;
+            $response_data["user_comm"]["contact_type"] = "mobile";
         }
 
         return $response_data; // JSON Response

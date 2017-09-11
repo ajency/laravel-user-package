@@ -8,6 +8,7 @@ use Exception;
 
 use App\User;
 use App\UserCommunication;
+use App\UserDetail;
 use Ajency\User\Ajency\socialaccount\SocialAccountService;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -92,10 +93,10 @@ class UserAuth {
         return $response_data;
     }
 
-    public function updateOrCreateUserComm($data) {
+    public function updateOrCreateUserComm($user_obj, $data) {
     	$response_data = [];
 
-    	if (isset($data['email']) || isset($data['mobile'] || isset($data['landline'])) { // If mobile, landline or Email is defined in the plugin, then mark this fields as 'True' as this is User's 1st contact
+    	if (isset($data['email']) || isset($data['contact'])) { // If mobile, landline or Email is defined in the plugin, then mark this fields as 'True' as this is User's 1st contact
             $types = [];
 
             (isset($data['email']) && $data['email']) ? array_push($types, 'email') : ''; // If email field exist & the value is not NULL
@@ -121,7 +122,7 @@ class UserAuth {
             		$comm->save();
             	} else { // Insert Query
 	                $comm = new UserCommunication;
-	                $comm->object_id = $user->id;
+	                $comm->object_id = $user_obj->id;
 	                $comm->object_type = 'user';
 
 	                // If type == contact then ("contact_type" exist then $data["contact_type"] else "mobile") Else "Email" / $type
@@ -145,34 +146,141 @@ class UserAuth {
         return $response_data;
     }
 
-    public function getOrCreateUser($data) {
+    public function updateOrCreateUserDetails($data) {
+    	$response_data = [];
 
-        $output = new ConsoleOutput();
-        $object = $this->checkIfUserExists($data); // Check if the EMail ID exist
-        $status = "exist";
+    	if (isset($data['email']) || isset($data['contact'])) { // If mobile, landline or Email is defined in the plugin, then mark this fields as 'True' as this is User's 1st contact
+            $types = [];
 
-        $status_active_provider = ["google", "facebook"];
+            foreach ($types as $key => $type) { // Loop through User_Detail types
+            	$details = UserDetail::where('value','=',$data[$]); // Get the UserDetail object
+            	if($details->count() > 0) { // Update Query, if the count is greater than ZERO
+            		/*$details = $details->update([
+            			'is_primary' => $data["is_primary"], 
+            			'is_communication' => $data["is_communication"], 
+            			'is_verified' => $data["is_verified"], 
+            			'is_visible' => $data["is_visible"]
+            		]);*/
 
-        if (!$object["status"]) { // if the email & info is not present in the list, then create new
-            $user = new User;
-            $user->name = $data["name"];
-            $user->email = $data["username"];
-            $user->password = $data["password"];
-            $user->signup_source = $data['provider'];
-            $user->status = in_array($data["provider"], $status_active_provider) ? "active" : "inactive"; // If provider is in the List, then activate, else Inactive
-            $user->save();
+            		// unset($data[$type]); // Remove the Email / Contact from the 
+            		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
+            			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
+            				$details[$datak] = $datav;
+            			}
+            		}
 
-            $this->updateOrCreateUserComm($data);
+            		$details->save();
+            	} else { // Insert Query
+	                $details = new UserDetail;
+	                
+					foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
+            			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
+            				$details[$datak] = $datav;
+            			}
+            		}
 
-            $status = "present";
-        } else { // This email exist
-            $user = User::find($object["data"]->object_id);
-
-            if ($user->signup_source !== $data['provider']) {
-                $status = "different";
+	                $details->save();
+            	}
             }
+
+            $response_data = array("status" => "success", "data" => $details);
+        } else { // Else required parameters are not passed
+        	$response_data = array("status" => "error", "message" => "Please pass the following Required parameters: 'email', 'contact', 'object_id' & 'object_type'.");
         }
 
-        return array($user, $status);
+        return $response_data;
+    }
+
+    public function updateOrCreateUser($user_data, $detail_data = [], $comm_data = []) {
+
+    	try {
+	        $output = new ConsoleOutput();
+	        $object = $this->checkIfUserExists($user_data); // Check if the EMail ID exist
+	        $status = "error";
+	        $user_required_params = ['name', 'username', 'password', 'provider', 'status'];
+	        $status_active_provider = ["google", "facebook"];
+
+	        if (!$object) { // if the email & info is not present in the list, then create new
+	            $user = new User;
+	            $user->name = $user_data["name"];
+	            $user->email = $user_data["username"];
+	            $user->password = $user_data["password"];
+	            $user->signup_source = $user_data['provider'];
+	            $user->status = in_array($user_data["provider"], $status_active_provider) ? "active" : "inactive"; // If provider is in the List, then activate, else Inactive
+
+	            foreach ($user_required_params as $keyParam => $valueParam) {
+	            	unset($user_data[$value_param]); // Remove other fields & it's value from JSON data
+	            }
+
+	            foreach($user_data as $datak => $datav) { // Update all the fields defined in the JSON data
+        			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
+        				$user[$datak] = $datav;
+        			}
+        		}
+
+	            $user->save();
+
+	        } else { // This User exist
+	            
+	            $user = User::find($object["data"]->object_id);
+        		
+        		if(isset($user_data['username'])) {
+	            	$user->email = $user_data["username"];
+        		}
+
+        		/*$user->name = isset($user_data["name"]) ? $user_data["name"] : $user->name;
+	            $user->password = isset($user_data["password"]) ? $user_data["password"] : $user->password;
+	            $user->signup_source = isset($user_data['provider']) ? $user_data['provider'] : $user->signup_source;
+	            $user->status = isset($user_data["status"]) ? $user_data["status"] : in_array($user_data["provider"], $status_active_provider) ? "active" : "inactive";*/
+
+	            foreach($user_data as $datak => $datav) { // Update all the fields defined in the JSON data
+        			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
+        				$user[$datak] = $datav;
+        			}
+        		}
+
+	            $user->save();
+	        }
+            if(sizeof($detail_data) > 0) {
+            	$detail_response = $this->updateOrCreateUserDetails($user, $detail_data);
+            }
+
+            if(sizeof($comm_data) > 0) {
+            	$comm_response = $this->updateOrCreateUserComm($user, $comm_data);
+            }
+
+        	$status = ($comm_response["status"] == "success" && $detail_response["status"] == "success") ? "success" : "error";
+	    } catch(Exception $e) {
+	    	$status = "error";
+	    }
+
+        return array("user" => $user, "user_details" => $detail_response["data"], "user_comm" => $comm_response["data"], "status" => $status);
+    }
+
+    public function getUserData($user_data, $is_id = false) { // Get all the User related details 
+
+    	$status = "success";
+    	$message = "";
+    	$user = NULL;
+    	$user_details = NULL;
+    	$user_comm = NULL;
+
+    	try {
+
+	    	if(!$is_id) {
+	    		$id = $user_data->id;
+	    	} else {
+	    		$id = $user_data;
+	    	}
+
+	    	$user = User::find($id);
+	    	$user_details = UserDetail::find($id);
+	    	$user_comm = UserCommunication::where(['object_id', '=' , $id], ['object_type', '=', 'user']);
+    	} catch (Exception $e) {
+    		$status = "error";
+    		$message = $e
+    	}
+
+    	return array("user" => $user, "user_details" => $user_details, "user_comm" => $user_comm, "status" => $status, "message" => $message);
     }
 }

@@ -39,7 +39,7 @@ class SocialAuthController extends Controller {
         }
 
         $data = $service->getSocialData($account, $provider);
-        $valid_response = $userauthObj->validateUserLogin($data, $provider);
+        $valid_response = $userauthObj->validateUserLogin($data["user"], $provider);
         /*
          "$response" => Returns [
             'status' -> Status of the Response, 
@@ -52,7 +52,7 @@ class SocialAuthController extends Controller {
         if($valid_response["status"] == "success") {
             if ($valid_response["authentic_user"]) { // If the user is Authentic, then Log the user in
                 if(!$valid_response["user"]) { // If $valid_response["user"] == None, then Create the User
-                    $user = $userauthObj->getOrCreateUser($data);
+                    $user = $userauthObj->updateOrCreateUser($data);
                 }
             }
         } else { //status == "error"
@@ -78,19 +78,19 @@ class SocialAuthController extends Controller {
             if($valid_response["status"] == "success") {
                 if ($valid_response["authentic_user"]) { // If the user is Authentic, then
                     if(!$valid_response["user"]) { // If $valid_response["user"] == None, then Create the User
-                        $user = $userauthObj->getOrCreateUser($data);
+                        $user = $userauthObj->updateOrCreateUser($data);
                     }
 
                     if ($valid_response["required_fields_filled"]) { // If the required fields are filled
-                        return response()->json(array("url" => "", "status" => 200, "message" => ""));
+                        return response()->json(array("next_url" => "", "status" => 200, "message" => "", "data" => "")); // Data should have JSON of USer, User Details & User Communication
                     } else { // Required fields are not Filled
-                        return response()->json(array("url" => "", "status" => 200, "message" => ""));
+                        return response()->json(array("next_url" => "", "status" => 200, "message" => "", "data" => ""));
                     }
                 } else { // User account is not Authenticated
-                    return response()->json(array("url" => "", "status" => 403, "message" => "")); // Unauthorized
+                    return response()->json(array("next_url" => "", "status" => 403, "message" => "")); // Unauthorized
                 }
         } else { //status == "error"
-            return response()->json(array("url" => "", "status" => 400, "message" => "")); // Bad Request
+            return response()->json(array("next_url" => "", "status" => 400, "message" => "")); // Bad Request
         }
 
         } catch (Exception $e) {
