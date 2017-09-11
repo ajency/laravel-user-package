@@ -153,7 +153,7 @@ class UserAuth {
             $types = [];
 
             foreach ($types as $key => $type) { // Loop through User_Detail types
-            	$details = UserDetail::where('value','=',$data[$]); // Get the UserDetail object
+            	$details = UserDetail::where('value','=',$data[$type]); // Get the UserDetail object
             	if($details->count() > 0) { // Update Query, if the count is greater than ZERO
             		/*$details = $details->update([
             			'is_primary' => $data["is_primary"], 
@@ -278,7 +278,7 @@ class UserAuth {
 	    	$user_comm = UserCommunication::where(['object_id', '=' , $id], ['object_type', '=', 'user']);
     	} catch (Exception $e) {
     		$status = "error";
-    		$message = $e
+    		$message = $e;
     	}
 
     	return array("user" => $user, "user_details" => $user_details, "user_comm" => $user_comm, "status" => $status, "message" => $message);
