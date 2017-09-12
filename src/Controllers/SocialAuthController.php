@@ -84,7 +84,7 @@ class SocialAuthController extends Controller {
             $social_data = $service->getSocialData($account, $provider);
             $valid_response = $userauthObj->validateUserLogin($social_data["user"], $provider);
 
-            if($valid_response["status"] == "success") {
+            if($valid_response["status"] == "success" || $valid_response["message"] == "no_account") {
                 if ($valid_response["authentic_user"]) { // If the user is Authentic, then
                     if(!$valid_response["user"]) { // If $valid_response["user"] == None, then Create/Update the User, User Details & User Communications
                         $user_resp = $userauthObj->updateOrCreateUser($social_data["user"], [], $social_data["user_comm"]);
