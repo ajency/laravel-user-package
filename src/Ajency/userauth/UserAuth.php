@@ -90,6 +90,7 @@ class UserAuth {
             if ($user_object && $provider == $user_object->signup_source && $user_object->status == "active") { // If user_object is Received & the Signup source provider is same then check if the required Fields are filled
                 $response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($user_object);
                 $response_data["status"] = "success";
+                $response_data["message"] = "account_found";
             } else {
                 $response_data["status"] = "error";
 
