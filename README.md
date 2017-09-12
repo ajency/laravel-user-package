@@ -1,6 +1,6 @@
 # Ajency Laravel User Authentication Package
 
-- Version 1.0
+- Version 1.4
 - Updated on 12 Sept 2017
 
 ## Description
@@ -266,5 +266,5 @@ $user_comm = ["email" => "xxxxxx@xxxxxxx.com", "contact" => "+xxxxxxxxxxxxx", "c
 > $userauth_obj->updateOrCreateUser($user_data, "", $user_comm);
 Response: array("user" => $user, "user_details" => isset($detail_response["data"]) ? $detail_response["data"] : $detail_response, "user_comm" => isset($comm_response["data"]) ? $comm_response["data"] : $comm_response, "status" => $status)
 
-Note: In $user_detail, "user_id" & in $user_comm, "object_type" & "object_id" is not needed as the User is created / updated before Inserting / Updating the UserDetail & UserCommuniation
+<b>Note</b>: In $user_detail, "user_id" & in $user_comm, "object_type" & "object_id" is not needed as the User is created / updated before Inserting / Updating the UserDetail & UserCommuniation
 
