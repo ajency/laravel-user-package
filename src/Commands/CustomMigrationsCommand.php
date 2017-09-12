@@ -55,8 +55,6 @@ class CustomMigrationsCommand extends Command {
         $status = true;
         $output = new ConsoleOutput();
 
-        $output->writeln("Write Content");
-        $output->writeln($content);
         try {
             $file = fopen($file_path, "w");
             fwrite($file, $content);
