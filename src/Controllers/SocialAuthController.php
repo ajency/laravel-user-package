@@ -49,15 +49,12 @@ class SocialAuthController extends Controller {
          ]
         */
 
-        $output->writeln(json_encode($valid_response));
-
         if($valid_response["status"] == "success" || $valid_response["message"] == "no_account") {
             if ($valid_response["authentic_user"]) { // If the user is Authentic, then Log the user in
-                $output->writeln("asdasd");
+                
                 if($valid_response["user"]) { // If $valid_response["user"] == None, then Create/Update the User, User Details & User Communications
                     $user_resp = $userauthObj->getUserData($valid_response["user"]);
                 } else {
-                    $output->writeln("as;ohas");
                     $user_resp = $userauthObj->updateOrCreateUser($social_data["user"], [], $social_data["user_comm"]);
                 }
 
