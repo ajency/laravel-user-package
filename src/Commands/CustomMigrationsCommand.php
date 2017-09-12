@@ -36,6 +36,8 @@ class CustomMigrationsCommand extends Command {
         $status = true; $content = NULL;
         $output = new ConsoleOutput();
 
+        $output->writeln(json_encode($file_path));
+
         try {
             if ($from_last) {
                 $content = file($file_path);
@@ -53,6 +55,8 @@ class CustomMigrationsCommand extends Command {
         $status = true;
         $output = new ConsoleOutput();
 
+        $output->writeln("Write Content");
+        $output->writeln($content);
         try {
             $file = fopen($file_path, "w");
             fwrite($file, $content);
@@ -74,30 +78,6 @@ class CustomMigrationsCommand extends Command {
     {
         $op = new ConsoleOutput();
         
-        $tables = [
-            array("table" => "user_communications", "model" => "UserCommunication", "status" => "create", "columns" => [
-                    array("column" => "object_type", "type" => "string", "size" => 50, "nullable" => true),
-                    array("column" => "object_id", "type" => "integer", "nullable" => true),
-                    array("column" => "type", "type" => "string", "size" => 100, "nullable" => true, "comment" => "Email / Landline / Mobile"),
-                    array("column" => "value", "type" => "string", "size" => 250, "nullable" => true),
-                    array("column" => "is_primary", "type" => "boolean", "default" => 0),
-                    array("column" => "is_communication", "type" => "boolean", "default" => 0),
-                    array("column" => "is_verified", "type" => "boolean", "default" => 0),
-                    array("column" => "is_visible", "type" => "boolean", "default" => 0),
-                ]
-            )
-        ];
-
-        foreach (config('aj_user_migrations') as $tableKey => $tableVal) {
-            if (($tableVal["model"] == "UserDetail" || $tableVal["table"] == "user_details") && $tableVal["status"] == "create") {
-                array_push($tableVal["columns"], array("column" => "user_id", "type" => "integer", "nullable" => true)); // Push the "user_id" in the UserDetail model's Column list
-            }
-
-            array_push($tables, $tableVal); // Push Custom Table config array to Default Table Array
-        }
-
-        // array_unshift($tables, config('aj_user_migrations')); // Prepend Default $tables to the Config Table array
-
         /*
             $tables = [
                 array(
@@ -135,6 +115,31 @@ class CustomMigrationsCommand extends Command {
                 )
             ];
         */
+        $tables = [
+            array("table" => "user_communications", "model" => "UserCommunication", "status" => "create", "columns" => [
+                    array("column" => "object_type", "type" => "string", "size" => 50, "nullable" => true),
+                    array("column" => "object_id", "type" => "integer", "nullable" => true),
+                    array("column" => "type", "type" => "string", "size" => 100, "nullable" => true, "comment" => "Email / Landline / Mobile"),
+                    array("column" => "value", "type" => "string", "size" => 250, "nullable" => true),
+                    array("column" => "is_primary", "type" => "boolean", "default" => 0),
+                    array("column" => "is_communication", "type" => "boolean", "default" => 0),
+                    array("column" => "is_verified", "type" => "boolean", "default" => 0),
+                    array("column" => "is_visible", "type" => "boolean", "default" => 0),
+                ]
+            )
+        ];
+
+        foreach (config('aj_user_migrations') as $tableKey => $tableVal) {
+            if (((isset($tableVal["model"]) && $tableVal["model"] == "UserDetail") || $tableVal["table"] == "user_details") && $tableVal["status"] == "create") {
+                array_push($tableVal["columns"], array("column" => "user_id", "type" => "integer", "nullable" => true)); // Push the "user_id" in the UserDetail model's Column list
+            }
+
+            $op->writeln(json_encode($tableVal));
+            array_push($tables, $tableVal); // Push Custom Table config array to Default Table Array
+        }
+
+        // array_unshift($tables, config('aj_user_migrations')); // Prepend Default $tables to the Config Table array
+
 
         foreach($tables as $index => $row) {
             if($row['status'] == "create") {
@@ -161,30 +166,30 @@ class CustomMigrationsCommand extends Command {
 
             $op->writeln($output);
             $table_name = explode("\n", explode(": ", $output)[1]);
-            $op->writeln($table_name[0].".php created successfully.");
+            //$op->writeln($table_name[0].".php created successfully.");
 
-            if(isset($row["model"]) && $row["mode"] == "UserDetail" && $row["status"] == "create") {
+            if(isset($row["model"]) && $row["model"] == "UserDetail" && $row["status"] == "create") {
                 $lines = $this->readFromFile("./app/User.php");
 
                 if ($lines["status"]) {
                     $extracted_content = $lines["data"];
-                    $user_model_content = "\t\t\tpublic function getUserDetails() { \n\t\t\t\t\$this->hasOne('App\UserDetail');\n}";
-                    $extracted_content = array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // Insert the above function to the content
+                    $user_model_content = "\n\tpublic function getUserDetails() { \n\t\t\$this->hasOne('App\UserDetail', 'user_id');\n\t}\n";
+                    array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // Insert the above function to the content
 
                     /*foreach ($extracted_content as $key_ec => $value_ec) {
                         $content .= $value_ec;
                     }*/
-                    $content = implode("", $extracted_content);
+                    $content = implode("", $lines["data"]);
                     $this->writeToFile("./app/User.php", $content);
                 }
                 
                 $lines = $this->readFromFile("./app/".$row["model"].".php");
                 if($lines["status"]) {
                     $extracted_content = $lines["data"];
-                    $user_details_model_content = "\t\t\tpublic function getUser() { \n\t\t\t\t\$this->belongsTo('App\User');\n\t\t\t}";
-                    $extracted_content = array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // 
+                    $user_details_model_content = "\n\tpublic function getUser() { \n\t\t\$this->belongsTo('App\User', 'user_id');\n\t}\n";
+                    array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // 
 
-                    $content = implode("", $extracted_content); // Merge all the content
+                    $content = implode("", $lines["data"]); // Merge all the content
                     $this->writeToFile("./app/".$row["model"].".php", $content);
                 }
             }
