@@ -260,7 +260,7 @@ Now, you can access the functions by,
 Response: ["user" => <User_Object>, "user_details" => <UserDetail_Object>, "user_comm" => <UserCommunication_object>, "status" => "< true / false>", "message" => "...."]
 
 
-$user_data = array("username" => "12345@ajgoogle.com", "password")
+$user_data = array("username" => "12345@ajgoogle.com", "password" => "hash password value", "name" => "xxxxx xxxxxxxxx", "provider" => "<'google' / 'facebook'>");
 $user_detail =["user_id" => $user->id];
 $user_comm = ["email" => "xxxxxx@xxxxxxx.com", "contact" => "+xxxxxxxxxxxxx", "contact_type" => "<'mobile' / 'telephone'>", "object_type" => "<'db' related to>", "object_id" => <'object'>->id]
 > $userauth_obj->updateOrCreateUser($user_data, "", $user_comm);
