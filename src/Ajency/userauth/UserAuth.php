@@ -48,7 +48,7 @@ class UserAuth {
     }
 
     public function isValidUser($data) { // Check if the User is Authenticated
-        if ($data && in_array($data["provider"], config('aj_user_config.social'))) {
+        if ($data && in_array($data["provider"], config('aj_user_config.social_account_provider'))) {
             return true;
         } else {
             return false;
