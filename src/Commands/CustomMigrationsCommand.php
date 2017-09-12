@@ -4,6 +4,7 @@ namespace Ajency\User\Commands;
 
 use Illuminate\Console\Command;
 
+use Exception;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 class CustomMigrationsCommand extends Command {
@@ -31,6 +32,39 @@ class CustomMigrationsCommand extends Command {
         parent::__construct();
     }
 
+    public function readFromFile($file_path, $from_last = false) {
+        $status = true; $content = NULL;
+        $output = new ConsoleOutput();
+
+        try {
+            if ($from_last) {
+                $content = file($file_path);
+            } else {
+                $content = file($file_path);
+            }
+        } catch (Exception $e) {
+            $output->writeln($e);
+        }
+
+        return array("status" => $status, "data" => $content);
+    }
+
+    public function writeToFile($file_path, $content) {
+        $status = true;
+        $output = new ConsoleOutput();
+
+        try {
+            $file = fopen($file_path, "w");
+            fwrite($file, $content);
+            fclose($file);
+        } catch (Exception $e) {
+            $output->writeln($e);
+            $status = false;
+        }
+
+        return array("status" => $status);
+    }
+
     /**
      * Execute the console command.
      *
@@ -55,46 +89,52 @@ class CustomMigrationsCommand extends Command {
         ];
 
         foreach (config('aj_user_migrations') as $tableKey => $tableVal) {
+            if (($tableVal["model"] == "UserDetail" || $tableVal["table"] == "user_details") && $tableVal["status"] == "create") {
+                array_push($tableVal["columns"], array("column" => "user_id", "type" => "integer", "nullable" => true)); // Push the "user_id" in the UserDetail model's Column list
+            }
+
             array_push($tables, $tableVal); // Push Custom Table config array to Default Table Array
         }
-        
+
         // array_unshift($tables, config('aj_user_migrations')); // Prepend Default $tables to the Config Table array
 
-        /*$tables = [
-            array(
-                "table" => "users", "status" => "alter", "columns" => [
-                    array("column" => "type", "type" => "string", "size" => 100, "comment" => "Internal / Registered (has password) / Guest (no password)"),
-                    array("column" => "has_required_fields_filled", "type" => "boolean", "default" => 0),
-                    array("column" => "status", "type" => "string", "size" => 50, "nullable" => true),
-                    array("column" => "creation_date", "type" => "datetime", "nullable" => true),//, "default" => ),
-                    array("column" => "last_login", "type" => "datetime", "nullable" => true),//, "default" => ),
-                    array("column" => "signup_source", "type" => "string", "size" => 100, "nullable" => true),
-                ]
-            ),
-            array(
-                "table" => "user_details", "model" => "UserDetail", "status" => "create", "columns" => [
-                    array("column" => "subtype", "type" => "string", "size" => 50, "nullable" => true),
-                    array("column" => "city", "type" => "string", "size" => 50, "nullable" => true),
-                    array("column" => "area", "type" => "string", "size" => 50, "nullable" => true),
-                    array("column" => "is_job_seeker", "type" => "boolean", "default" => 0),
-                    array("column" => "has_job_listing", "type" => "boolean", "default" => 0),
-                    array("column" => "has_business_listing", "type" => "boolean", "default" => 0),
-                    array("column" => "has_restaurant_listing", "type" => "boolean", "default" => 0),
-                ]
-            ),
-            array(
-                "table" => "user_communications", "model" => "UserCommunication", "status" => "create", "columns" => [
-                    array("column" => "object_type", "type" => "string", "size" => 50, "nullable" => true),
-                    array("column" => "object_id", "type" => "integer", "nullable" => true),
-                    array("column" => "type", "type" => "string", "size" => 100, "comment" => "Email / Landline / Mobile", "nullable" => true),
-                    array("column" => "value", "type" => "string", "size" => 250, "nullable" => true),
-                    array("column" => "is_primary", "type" => "boolean", "default" => 0),
-                    array("column" => "is_communication", "type" => "boolean", "default" => 0),
-                    array("column" => "is_verified", "type" => "boolean", "default" => 0),
-                    array("column" => "is_visible", "type" => "boolean", "default" => 0),
-                ]
-            )
-        ];*/
+        /*
+            $tables = [
+                array(
+                    "table" => "users", "status" => "alter", "columns" => [
+                        array("column" => "type", "type" => "string", "size" => 100, "comment" => "Internal / Registered (has password) / Guest (no password)"),
+                        array("column" => "has_required_fields_filled", "type" => "boolean", "default" => 0),
+                        array("column" => "status", "type" => "string", "size" => 50, "nullable" => true),
+                        array("column" => "creation_date", "type" => "datetime", "nullable" => true),//, "default" => ),
+                        array("column" => "last_login", "type" => "datetime", "nullable" => true),//, "default" => ),
+                        array("column" => "signup_source", "type" => "string", "size" => 100, "nullable" => true),
+                    ]
+                ),
+                array(
+                    "table" => "user_details", "model" => "UserDetail", "status" => "create", "columns" => [
+                        array("column" => "subtype", "type" => "string", "size" => 50, "nullable" => true),
+                        array("column" => "city", "type" => "string", "size" => 50, "nullable" => true),
+                        array("column" => "area", "type" => "string", "size" => 50, "nullable" => true),
+                        array("column" => "is_job_seeker", "type" => "boolean", "default" => 0),
+                        array("column" => "has_job_listing", "type" => "boolean", "default" => 0),
+                        array("column" => "has_business_listing", "type" => "boolean", "default" => 0),
+                        array("column" => "has_restaurant_listing", "type" => "boolean", "default" => 0),
+                    ]
+                ),
+                array(
+                    "table" => "user_communications", "model" => "UserCommunication", "status" => "create", "columns" => [
+                        array("column" => "object_type", "type" => "string", "size" => 50, "nullable" => true),
+                        array("column" => "object_id", "type" => "integer", "nullable" => true),
+                        array("column" => "type", "type" => "string", "size" => 100, "comment" => "Email / Landline / Mobile", "nullable" => true),
+                        array("column" => "value", "type" => "string", "size" => 250, "nullable" => true),
+                        array("column" => "is_primary", "type" => "boolean", "default" => 0),
+                        array("column" => "is_communication", "type" => "boolean", "default" => 0),
+                        array("column" => "is_verified", "type" => "boolean", "default" => 0),
+                        array("column" => "is_visible", "type" => "boolean", "default" => 0),
+                    ]
+                )
+            ];
+        */
 
         foreach($tables as $index => $row) {
             if($row['status'] == "create") {
@@ -123,7 +163,33 @@ class CustomMigrationsCommand extends Command {
             $table_name = explode("\n", explode(": ", $output)[1]);
             $op->writeln($table_name[0].".php created successfully.");
 
-            $lines = file("./database/migrations/".$table_name[0].".php");
+            if(isset($row["model"]) && $row["mode"] == "UserDetail" && $row["status"] == "create") {
+                $lines = $this->readFromFile("./app/User.php");
+
+                if ($lines["status"]) {
+                    $extracted_content = $lines["data"];
+                    $user_model_content = "\t\t\tpublic function getUserDetails() { \n\t\t\t\t\$this->hasOne('App\UserDetail');\n}";
+                    $extracted_content = array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // Insert the above function to the content
+
+                    /*foreach ($extracted_content as $key_ec => $value_ec) {
+                        $content .= $value_ec;
+                    }*/
+                    $content = implode("", $extracted_content);
+                    $this->writeToFile("./app/User.php", $content);
+                }
+                
+                $lines = $this->readFromFile("./app/".$row["model"].".php");
+                if($lines["status"]) {
+                    $extracted_content = $lines["data"];
+                    $user_details_model_content = "\t\t\tpublic function getUser() { \n\t\t\t\t\$this->belongsTo('App\User');\n\t\t\t}";
+                    $extracted_content = array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // 
+
+                    $content = implode("", $extracted_content); // Merge all the content
+                    $this->writeToFile("./app/".$row["model"].".php", $content);
+                }
+            }
+
+            $lines = $this->readFromFile("./database/migrations/".$table_name[0].".php")["data"];
 
             $content = '';
 
@@ -192,9 +258,15 @@ class CustomMigrationsCommand extends Command {
             }
 
             //$op->writeln($content);
-            $file = fopen("./database/migrations/".$table_name[0].".php", "w");
+
+            /*$file = fopen("./database/migrations/".$table_name[0].".php", "w");
             fwrite($file, $content);
-            fclose($file);
+            fclose($file);*/
+            $write_response = $this->writeToFile("./database/migrations/".$table_name[0].".php", $content);
+
+            if($write_response) {
+                $op->writeln("Added user defined columns in ".$table_name[0].".php");
+            }
 
         }
 
