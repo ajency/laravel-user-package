@@ -28,7 +28,7 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 5. In main project, open "composer.json", and then add <br/>
 	> "Ajency\\User\\": "packages/ajency/user/src"<br/>
 	
-	under the defined 'key'
+	under "psr-4"
 	
 	"autoload": {
 		...,
@@ -43,6 +43,7 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 	}
 
 6. In config/app.php, add <br/>
+
 	'providers' => [
 
 		...
@@ -64,7 +65,82 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 8. Run 
 	> php artisan vendor:publish
 
-9. Open 'aj_user_migrations.php' file & add/edit the columns that the needed for your User flow.
+9. Open 'aj_user_migrations.php' file & add/edit the columns that are needed for your User flow.
+	Here are few configurations available
+
+	Under Table level,
+
+	[
+        "model" -> Model Name & also Migration file is generated & Table Name generated relating to the Model Name
+    
+        "table" -> Table name to be assigned for Migrations (Note: Only Migration file is generated)
+    
+        "status" -> (create / alter)
+    
+        "columns" -> [Array of Columns]
+    
+            "columns" -> array( 
+    
+                "column" => "<column_name>", 
+    
+                "type" => "<column_type>", 
+    
+                "size" => "size of the Column - < Only for String Type >",
+    
+                "digit" => "Digits to display - < Only for Float Type >", "decimal_pt" => "numbers to store after decimal point - < Only for Float Type >",
+    
+                "precision" => "Digits of precision to store < Only for Decimal Type >", "scale" => "Decimal point scale < Only for Decimal Type >",
+    
+                "comment" => "<comment_for_the_column>", 
+    
+                "nullable" => "<true/false> [Decides whether Column is nullable or not]", 
+    
+                "default" => "<default_value> [Sets default value on SAVE]"
+    
+            )
+    ]
+
+    
+            "type" ("For a column") -> ["string", "text", "boolean", "integer", "decimal", "float", "date", "datetime", "timestamp", "increments"]
+    
+            For ex:
+    		
+    		[
+	            array(
+	    
+	                "table" => "<table_A> [this field is only used if status == 'alter' or (status == 'create' & 'model' is not defined)]",
+	                
+	                "model" => "ModelA [this field is only used if status == 'create']",
+
+	                "status" => "< create / alter >",
+	                
+	                "columns" => [
+	                
+	                    array("column" => "<Col-1>", "type" => "string", "size" => 100, "nullable" => true, "comment" => "Internal / Registered (has password) / Guest (no password)"),
+	                
+	                    array("column" => "<Col-2>", "type" => "boolean", "default" => 0),
+	                
+	                    array("column" => "<Col-3>", "type" => "datetime", "nullable" => true),
+	                
+	                    array("column" => "<Col-4>", "type" => "date", "nullable" => true),
+	                
+	                    array("column" => "<Col-5>", "type" => "timestamp", "nullable" => true),
+	                
+	                    array("column" => "<Col-6>", "type" => "integer", "nullable" => true),
+	                
+	                    array("column" => "<Col-7>", "type" => "float", "digit" => <Digit limit>, "decimal_pt" => <Decimal_pt_limit>, "nullable" => true),
+	                
+	                    array("column" => "<Col-8>", "type" => "decimal", "precision" => <Precision limit>, "scale" => <decimal scale limit>, "nullable" => true),
+	                
+	                    array("column" => "<Col-9>", "type" => "increments", "nullable" => true),
+	                
+	                ]
+	            
+	            ),
+
+	            ...
+
+			]
 
 10. After assigning the Column names Run <br/>
 	> php artisan aj_user:migrate<br/>
@@ -77,6 +153,25 @@ This will generate the Models & migrations for new table & alter the old users t
 <b>Caution</b> : Laravel 5.4 has an issue with migrations regarding String length, please check this before running a migration on 5.4 version<br/>
 
 12. Set your routes & other configurations in 'aj_user_config.php'.<br/>
+	Possible options available are:
+	[
+
+		"social_failure_redirect_url" => "/",
+		
+		"social" => ["google", "facebook"],
+		
+		"social_email_domain" => "aj",
+		
+		"table_required_fields" => [
+		
+			array("table" => "users", "columns" => ["type", "status", "signup_source"]),
+		
+			array("table" => "user_details", "columns" => ["area", "city"]),
+		
+			array("table" => "user_communications", "columns" => [])
+		
+		]
+	]
 
 13. Now update the 'config/services.php', with the following: <br/>
 	
