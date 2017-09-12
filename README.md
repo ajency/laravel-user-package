@@ -1,7 +1,7 @@
 # Ajency Laravel User Authentication Package
 
 - Version 1.0
-- Updated on 07 Sept 2017
+- Updated on 12 Sept 2017
 
 ## Description
 Contains Email Signup &amp; Social Auth, generating User Details (User Meta), User Communications Table &amp; Alter of Users Table with columns defined by user.
@@ -70,7 +70,7 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 
 	Under Table level,
 
-	[
+	[<br/>
         "model" -> Model Name & also Migration file is generated & Table Name generated relating to the Model Name
     
         "table" -> Table name to be assigned for Migrations (Note: Only Migration file is generated)
@@ -83,7 +83,7 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
     
                 "column" => "<column_name>", 
     
-                "type" => "<column_type>", 
+                "type" => "<column_type>", // Available column Types are ["string", "text", "boolean", "integer", "decimal", "float", "date", "datetime", "timestamp", "increments"]
     
                 "size" => "size of the Column - < Only for String Type >",
     
@@ -98,49 +98,46 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
                 "default" => "<default_value> [Sets default value on SAVE]"
     
             )
-    ]
+    ] <br/>
 
-    
-            "type" ("For a column") -> ["string", "text", "boolean", "integer", "decimal", "float", "date", "datetime", "timestamp", "increments"]
-    
-            For ex:
-    		
-    		[
-	            array(
-	    
-	                "table" => "<table_A> [this field is only used if status == 'alter' or (status == 'create' & 'model' is not defined)]",
-	                
-	                "model" => "ModelA [this field is only used if status == 'create']",
+    For ex:
+	
+	[
+        array(
 
-	                "status" => "< create / alter >",
-	                
-	                "columns" => [
-	                
-	                    array("column" => "<Col-1>", "type" => "string", "size" => 100, "nullable" => true, "comment" => "Internal / Registered (has password) / Guest (no password)"),
-	                
-	                    array("column" => "<Col-2>", "type" => "boolean", "default" => 0),
-	                
-	                    array("column" => "<Col-3>", "type" => "datetime", "nullable" => true),
-	                
-	                    array("column" => "<Col-4>", "type" => "date", "nullable" => true),
-	                
-	                    array("column" => "<Col-5>", "type" => "timestamp", "nullable" => true),
-	                
-	                    array("column" => "<Col-6>", "type" => "integer", "nullable" => true),
-	                
-	                    array("column" => "<Col-7>", "type" => "float", "digit" => <Digit limit>, "decimal_pt" => <Decimal_pt_limit>, "nullable" => true),
-	                
-	                    array("column" => "<Col-8>", "type" => "decimal", "precision" => <Precision limit>, "scale" => <decimal scale limit>, "nullable" => true),
-	                
-	                    array("column" => "<Col-9>", "type" => "increments", "nullable" => true),
-	                
-	                ]
-	            
-	            ),
+            "table" => "<table_A> [this field is only used if status == 'alter' or (status == 'create' & 'model' is not defined)]",
+            
+            "model" => "ModelA [this field is only used if status == 'create']",
 
-	            ...
+            "status" => "< create / alter >",
+            
+            "columns" => [
+            
+                array("column" => "<Col-1>", "type" => "string", "size" => 100, "nullable" => true, "comment" => "Internal / Registered (has password) / Guest (no password)"),
+            
+                array("column" => "<Col-2>", "type" => "boolean", "default" => 0),
+            
+                array("column" => "<Col-3>", "type" => "datetime", "nullable" => true),
+            
+                array("column" => "<Col-4>", "type" => "date", "nullable" => true),
+            
+                array("column" => "<Col-5>", "type" => "timestamp", "nullable" => true),
+            
+                array("column" => "<Col-6>", "type" => "integer", "nullable" => true),
+            
+                array("column" => "<Col-7>", "type" => "float", "digit" => <Digit limit>, "decimal_pt" => <Decimal_pt_limit>, "nullable" => true),
+            
+                array("column" => "<Col-8>", "type" => "decimal", "precision" => <Precision limit>, "scale" => <decimal scale limit>, "nullable" => true),
+            
+                array("column" => "<Col-9>", "type" => "increments", "nullable" => true),
+            
+            ]
+        
+        ),
 
-			]
+        ...
+
+	]
 
 10. After assigning the Column names Run <br/>
 	> php artisan aj_user:migrate<br/>
