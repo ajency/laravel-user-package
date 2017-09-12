@@ -260,9 +260,9 @@ Now, you can access the functions by,
 Response: ["user" => <User_Object>, "user_details" => <UserDetail_Object>, "user_comm" => <UserCommunication_object>, "status" => "< true / false>", "message" => "...."]
 
 
-$user_data = array("username" => "12345@ajgoogle.com", "password" => "hash password value", "name" => "xxxxx xxxxxxxxx", "provider" => "<'google' / 'facebook'>");
-$user_detail =["user_id" => $user->id];
-$user_comm = ["email" => "xxxxxx@xxxxxxx.com", "contact" => "+xxxxxxxxxxxxx", "contact_type" => "<'mobile' / 'telephone'>", "object_type" => "<'db' related to>", "object_id" => <'object'>->id]
+$user_data = array("username" => "12345@ajgoogle.com", "password" => "hash password value", "name" => "xxxxx xxxxxxxxx", "provider" => "<'google' / 'facebook'>");<br/>
+$user_detail =["user_id" => $user->id];<br/>
+$user_comm = ["email" => "xxxxxx@xxxxxxx.com", "contact" => "+xxxxxxxxxxxxx", "contact_type" => "<'mobile' / 'telephone'>", "object_type" => "<'db' related to>", "object_id" => <'object'>->id]; <br/>
 > $userauth_obj->updateOrCreateUser($user_data, "", $user_comm);
 Response: array("user" => $user, "user_details" => isset($detail_response["data"]) ? $detail_response["data"] : $detail_response, "user_comm" => isset($comm_response["data"]) ? $comm_response["data"] : $comm_response, "status" => $status)
 
