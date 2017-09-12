@@ -109,7 +109,7 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 
             "table" => "<table_A> [this field is only used if status == 'alter' or (status == 'create' & 'model' is not defined)]",
             
-            "model" => "ModelA [this field is only used if status == 'create']",
+            "model" => "ModelA [this field is only used if status == 'create']", // On defining it, will Migration files along with the Model file in Application Level
 
             "status" => "< create / alter >",
             
@@ -141,7 +141,7 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 
 	]
 
-10. After assigning the Column names Run <br/>
+10. After <b>assigning</b> the column names, run <br/>
 	> php artisan aj_user:migrate<br/>
 
 This will generate the Models & migrations for new table & alter the old users table.
@@ -227,9 +227,7 @@ This will generate the Models & migrations for new table & alter the old users t
 			Route::get('/logout/{provider}', 'User\SocialAuthController@logout');
 		});
 	});
-	<b>Note:</b> This will be <b>updated later</b> with Facade, so that user can directly access as
+	<br/><b>Note:</b> This will be <b>updated later</b> with Facade, so that user can directly access as <br/>
 		> AjUser::routes();
 
-	For now, do not use <b>AjUser::routes()</b> in routes/web.php
-
-15. 
+	For now, <b>do not use</b> AjUser::routes() in routes/web.php
