@@ -220,7 +220,7 @@ class UserAuth {
             $status = "success";
 	        $user_required_params = ['name', 'username', 'password', 'provider', 'status'];
 
-	        $status_active_provider = ["google", "facebook"];
+	        $status_active_provider = config("aj_user_config.social_acccount_provider");
             if (!$object) { // if the email & info is not present in the list, then create new
                 $user = new User;
 
