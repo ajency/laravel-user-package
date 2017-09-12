@@ -70,7 +70,8 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 
 	Under Table level,
 
-	[<br/>
+	[ <br/>
+
         "model" -> Model Name & also Migration file is generated & Table Name generated relating to the Model Name
     
         "table" -> Table name to be assigned for Migrations (Note: Only Migration file is generated)
@@ -102,7 +103,8 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
 
     For ex:
 	
-	[
+	[<br/>
+
         array(
 
             "table" => "<table_A> [this field is only used if status == 'alter' or (status == 'create' & 'model' is not defined)]",
@@ -150,7 +152,7 @@ This will generate the Models & migrations for new table & alter the old users t
 <b>Caution</b> : Laravel 5.4 has an issue with migrations regarding String length, please check this before running a migration on 5.4 version<br/>
 
 12. Set your routes & other configurations in 'aj_user_config.php'.<br/>
-	Possible options available are:
+	Possible options available are: <br/>
 	[
 
 		"social_failure_redirect_url" => "/",
