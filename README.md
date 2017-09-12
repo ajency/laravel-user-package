@@ -228,6 +228,6 @@ This will generate the Models & migrations for new table & alter the old users t
 		});
 	});
 	<br/><b>Note:</b> This will be <b>updated later</b> with Facade, so that user can directly access as <br/>
-		> AjUser::routes();
+	> AjUser::routes();
 
 	For now, <b>do not use</b> AjUser::routes() in routes/web.php
