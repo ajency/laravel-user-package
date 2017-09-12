@@ -231,3 +231,40 @@ This will generate the Models & migrations for new table & alter the old users t
 	> AjUser::routes();
 
 	For now, <b>do not use</b> AjUser::routes() in routes/web.php
+
+## Package Functions that are available at your disposal
+1. Functions available:
+	- getSocialData(<user_data>, $provider); // $provider -> ['email_signup', 'google', 'facebook', .....]
+	- validateUserLogin($social_data["user"], $provider);
+	- updateOrCreateUser(<user_data_json>, <user_detail_data_json>, <user_comm_data_json>)
+	- getUserData(<user_data_json>, is_id=<true/false>)
+	- updateOrCreateUserComm(<user_object - DB object>, <user_comm_data_json>) // Create or Update the UserCommunication Table
+	- updateOrCreateUserDetails(<user_object - DB object>, <'user_details_data_json'>, search_by_column='user_id column', search_by_column_value='<integer / string value>') // Create or Update UserDetail Table
+
+2. Accessing the above functions: <br/>
+Define <br/>
+> use Ajency\User\Ajency\socialaccount\SocialAccountService;
+> use Ajency\User\Ajency\userauth\UserAuth;
+
+on the header of the file. Then, <br/>
+> $service = new SocialAccountService;
+> $userauth_obj = new UserAuth;
+
+Now, you can access the functions by,
+### SocialAccountService functions:
+> $social_data = $service->getSocialData($account, $provider);
+
+### UserAuth functions:
+> $user_data = $user_obj;
+> $userauth_obj->getUserData($user_data, false); // <parameter 1> -> User Object, <parameter 2> -> "is_id = false"
+Response: ["user" => <User_Object>, "user_details" => <UserDetail_Object>, "user_comm" => <UserCommunication_object>, "status" => "< true / false>", "message" => "...."]
+
+
+$user_data = array("username" => "12345@ajgoogle.com", "password")
+$user_detail =["user_id" => $user->id];
+$user_comm = ["email" => "xxxxxx@xxxxxxx.com", "contact" => "+xxxxxxxxxxxxx", "contact_type" => "<'mobile' / 'telephone'>", "object_type" => "<'db' related to>", "object_id" => <'object'>->id]
+> $userauth_obj->updateOrCreateUser($user_data, "", $user_comm);
+Response: array("user" => $user, "user_details" => isset($detail_response["data"]) ? $detail_response["data"] : $detail_response, "user_comm" => isset($comm_response["data"]) ? $comm_response["data"] : $comm_response, "status" => $status)
+
+Note: In $user_detail, "user_id" & in $user_comm, "object_type" & "object_id" is not needed as the User is created / updated before Inserting / Updating the UserDetail & UserCommuniation
+

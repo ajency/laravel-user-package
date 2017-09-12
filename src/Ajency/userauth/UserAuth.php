@@ -166,47 +166,47 @@ class UserAuth {
         return $response_data;
     }
 
-    public function updateOrCreateUserDetails($data) {
-    	$response_data = [];
+    public function updateOrCreateUserDetails($user_obj, $data, $search_by_column='user_id', $search_column_value='') {
+    	$response_data = []; $details = null;
 
-    	if (isset($data['email']) || isset($data['contact'])) { // If mobile, landline or Email is defined in the plugin, then mark this fields as 'True' as this is User's 1st contact
-            $types = [];
+    	try {
+	    	$details = UserDetail::where($search_by_column, '=', $search_column_value); // Get the UserDetail object
+	        	
+	    	if($details->count() > 0) { // Update Query, if the count is greater than ZERO
+	    		/*$details = $details->update([
+	    			'is_primary' => $data["is_primary"], 
+	    			'is_communication' => $data["is_communication"], 
+	    			'is_verified' => $data["is_verified"], 
+	    			'is_visible' => $data["is_visible"]
+	    		]);*/
 
-            foreach ($types as $key => $type) { // Loop through User_Detail types
-            	$details = UserDetail::where('value','=',$data[$type]); // Get the UserDetail object
-            	if($details->count() > 0) { // Update Query, if the count is greater than ZERO
-            		/*$details = $details->update([
-            			'is_primary' => $data["is_primary"], 
-            			'is_communication' => $data["is_communication"], 
-            			'is_verified' => $data["is_verified"], 
-            			'is_visible' => $data["is_visible"]
-            		]);*/
+	    		// unset($data[$type]); // Remove the Email / Contact from the 
+	    		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
+	    			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
+	    				$details[$datak] = $datav;
+	    			}
+	    		}
 
-            		// unset($data[$type]); // Remove the Email / Contact from the 
-            		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
-            			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
-            				$details[$datak] = $datav;
-            			}
-            		}
+	    		$details->save();
+	    	} else { // Insert Query
+	            $details = new UserDetail;
+	            
+	            $details->user_id = $user_obj->id;
 
-            		$details->save();
-            	} else { // Insert Query
-	                $details = new UserDetail;
-	                
-					foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
-            			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
-            				$details[$datak] = $datav;
-            			}
-            		}
+				foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
+	    			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
+	    				$details[$datak] = $datav;
+	    			}
+	    		}
 
-	                $details->save();
-            	}
-            }
+	            $details->save();
+	    	}
+	        
 
-            $response_data = array("status" => "success", "data" => $details);
-        } else { // Else required parameters are not passed
-        	$response_data = array("status" => "error", "message" => "Please pass the following Required parameters: 'email', 'contact', 'object_id' & 'object_type'.");
-        }
+	        $response_data = array("status" => "success", "data" => $details);
+    	} catch (Exception $e) {
+    		$response_data = array("status" => "error", "data" => $details, "message" => $e);
+    	}
 
         return $response_data;
     }
@@ -261,7 +261,7 @@ class UserAuth {
 	            $user->save();
 	        }
             if(sizeof($detail_data) > 0) {
-            	$detail_response = $this->updateOrCreateUserDetails($user, $detail_data);
+            	$detail_response = $this->updateOrCreateUserDetails($user, $detail_data, 'user_id', $user->id);
                 $status = ($detail_response["status"] == "success") ? $status : "error";
             }
 
