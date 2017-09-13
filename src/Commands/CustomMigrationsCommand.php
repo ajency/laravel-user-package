@@ -132,7 +132,6 @@ class CustomMigrationsCommand extends Command {
                 array_push($tableVal["columns"], array("column" => "user_id", "type" => "integer", "nullable" => true)); // Push the "user_id" in the UserDetail model's Column list
             }
 
-            $op->writeln(json_encode($tableVal));
             array_push($tables, $tableVal); // Push Custom Table config array to Default Table Array
         }
 
@@ -142,7 +141,7 @@ class CustomMigrationsCommand extends Command {
         foreach($tables as $index => $row) {
             if($row['status'] == "create") {
                 if(isset($row["model"]) && $row["model"]) { // If model Name is defined
-                    $op->writeln("Create via Model");
+                    // $op->writeln("Create via Model");
                     $modelName = '';
 
                     foreach (explode(" ", $row['model']) as $key => $value) {
@@ -165,13 +164,16 @@ class CustomMigrationsCommand extends Command {
             $op->writeln($output);
             $table_name = explode("\n", explode(": ", $output)[1]);
             //$op->writeln($table_name[0].".php created successfully.");
+            
+            // $tab_spacing = "\t";
+            $tab_spacing = "    "; // 4 x <spaces> instead of \t -> for Content Display
 
             if(isset($row["model"]) && $row["model"] == "UserDetail" && $row["status"] == "create") {
                 $lines = $this->readFromFile("./app/User.php");
-
                 if ($lines["status"]) {
                     $extracted_content = $lines["data"];
-                    $user_model_content = "\n\tpublic function getUserDetails() { \n\t\t\$this->hasOne('App\UserDetail', 'user_id');\n\t}\n";
+                    // $user_model_content = "\n\tpublic function getUserDetails() { \n\t\t\$this->hasOne('App\UserDetail', 'user_id');\n\t}\n";
+                    $user_model_content = "\n" . $tab_spacing . "public function getUserDetails() { \n" . $tab_spacing . $tab_spacing . "\$this->hasOne('App\UserDetail', 'user_id');\n" .$tab_spacing . "}\n";
                     array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // Insert the above function to the content
 
                     /*foreach ($extracted_content as $key_ec => $value_ec) {
@@ -184,7 +186,8 @@ class CustomMigrationsCommand extends Command {
                 $lines = $this->readFromFile("./app/".$row["model"].".php");
                 if($lines["status"]) {
                     $extracted_content = $lines["data"];
-                    $user_details_model_content = "\n\tpublic function getUser() { \n\t\t\$this->belongsTo('App\User', 'user_id');\n\t}\n";
+                    // $user_details_model_content = "\n\tpublic function getUser() { \n\t\t\$this->belongsTo('App\User', 'user_id');\n\t}\n";
+                    $user_details_model_content = "\n" . $tab_spacing . "public function getUser() { \n" . $tab_spacing . $tab_spacing . "\$this->belongsTo('App\User', 'user_id');\n" . $tab_spacing ."}\n";
                     array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // 
 
                     $content = implode("", $lines["data"]); // Merge all the content
@@ -249,13 +252,13 @@ class CustomMigrationsCommand extends Command {
                         }
                             
                         // $content .= "\t\t\t" . $column . ";\n";
-                        $content .= "            " . $column . ";\n"; // Using <spaces> instead of Tabs (\t)
+                        $content .= $tab_spacing . $tab_spacing . $tab_spacing . $column . ";\n"; // Using <spaces> instead of Tabs (\t)
                     }
                 } else if ($key > 4 && strpos(json_encode($lines[$key - 4]), "down()") && strpos(json_encode($lines[$key - 2]), "Schema::") && !strpos(json_encode($lines[$key - 2]), "Schema::dropIfExists")) { // For Rollback -> assign column names Only if the Migrations Type was ALTER
                     
                     foreach($row["columns"] as $colIndex => $colValue) {
                         //$content .= "\t\t\t" . "\$table->dropColumn('" . $colValue['column'] . "');\n";
-                        $content .= "            " . "\$table->dropColumn('" . $colValue['column'] . "');\n"; // Using <spaces> instead of Tabs (\t)
+                        $content .= $tab_spacing . $tab_spacing . $tab_spacing . "\$table->dropColumn('" . $colValue['column'] . "');\n"; // Using <spaces> instead of Tabs (\t)
                     }
                 }
 
