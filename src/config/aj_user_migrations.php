@@ -21,15 +21,32 @@ return [
             )
 
             "type" ("For a column") -> ["string", "text", "boolean", "integer", "decimal", "float", "date", "datetime", "timestamp", "increments"]
+            For ex:
+            array(
+                "table" => "<table_A> [this field is only used if status == 'alter' or (status == 'create' & 'model' is not defined)]",
+                "model" => "ModelA [this field is only used if status == 'create']",
+                "status" => "< create / alter >",
+                "columns" => [
+                    array("column" => "<Col-1>", "type" => "string", "size" => 100, "nullable" => true, "comment" => "Internal / Registered (has password) / Guest (no password)"),
+                    array("column" => "<Col-2>", "type" => "boolean", "default" => 0),
+                    array("column" => "<Col-3>", "type" => "datetime", "nullable" => true),
+                    array("column" => "<Col-4>", "type" => "date", "nullable" => true),
+                    array("column" => "<Col-5>", "type" => "timestamp", "nullable" => true),
+                    array("column" => "<Col-6>", "type" => "integer", "nullable" => true),
+                    array("column" => "<Col-7>", "type" => "float", "digit" => <Digit limit>, "decimal_pt" => <Decimal_pt_limit>, "nullable" => true),
+                    array("column" => "<Col-8>", "type" => "decimal", "precision" => <Precision limit>, "scale" => <decimal scale limit>, "nullable" => true),
+                    array("column" => "<Col-9>", "type" => "increments", "nullable" => true),
+                ]
+            )
     */
 
     array(
         "table" => "users", "status" => "alter", "columns" => [
-            array("column" => "type", "type" => "string", "size" => 100, "comment" => "Internal / Registered (has password) / Guest (no password)"),
+            array("column" => "type", "type" => "string", "size" => 100, "nullable" => true, "comment" => "Internal / Registered (has password) / Guest (no password)"),
             array("column" => "has_required_fields_filled", "type" => "boolean", "default" => 0),
             array("column" => "status", "type" => "string", "size" => 50, "nullable" => true),
-            array("column" => "creation_date", "type" => "datetime", "nullable" => true),//, "default" => ),
-            array("column" => "last_login", "type" => "datetime", "nullable" => true),//, "default" => ),
+            array("column" => "creation_date", "type" => "datetime", "nullable" => true),
+            array("column" => "last_login", "type" => "datetime", "nullable" => true),
             array("column" => "signup_source", "type" => "string", "size" => 100, "nullable" => true),
         ]
     ),
