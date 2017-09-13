@@ -188,7 +188,7 @@ class CustomMigrationsCommand extends Command {
                     $extracted_content = $lines["data"];
                     // $user_details_model_content = "\n\tpublic function getUser() { \n\t\t\$this->belongsTo('App\User', 'user_id');\n\t}\n";
                     $user_details_model_content = "\n" . $tab_spacing . "public function getUser() { \n" . $tab_spacing . $tab_spacing . "\$this->belongsTo('App\User', 'user_id');\n" . $tab_spacing ."}\n";
-                    array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // 
+                    array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_details_model_content); // 
 
                     $content = implode("", $lines["data"]); // Merge all the content
                     $this->writeToFile("./app/".$row["model"].".php", $content);
