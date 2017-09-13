@@ -248,12 +248,14 @@ class CustomMigrationsCommand extends Command {
                             $column .= "->nullable()";
                         }
                             
-                        $content .= "\t\t\t" . $column . ";\n";
+                        // $content .= "\t\t\t" . $column . ";\n";
+                        $content .= "            " . $column . ";\n"; // Using <spaces> instead of Tabs (\t)
                     }
                 } else if ($key > 4 && strpos(json_encode($lines[$key - 4]), "down()") && strpos(json_encode($lines[$key - 2]), "Schema::") && !strpos(json_encode($lines[$key - 2]), "Schema::dropIfExists")) { // For Rollback -> assign column names Only if the Migrations Type was ALTER
                     
                     foreach($row["columns"] as $colIndex => $colValue) {
-                        $content .= "\t\t\t" . "\$table->dropColumn('" . $colValue['column'] . "');\n";
+                        //$content .= "\t\t\t" . "\$table->dropColumn('" . $colValue['column'] . "');\n";
+                        $content .= "            " . "\$table->dropColumn('" . $colValue['column'] . "');\n"; // Using <spaces> instead of Tabs (\t)
                     }
                 }
 
