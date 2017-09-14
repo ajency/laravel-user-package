@@ -52,7 +52,7 @@ return [
     ),
     array(
         "table" => "user_details", "model" => "UserDetail", "status" => "create", "columns" => [
-            array("column" => "subtype", "type" => "string", "size" => 50, "nullable" => true),
+            array("column" => "subtype", "type" => "text", "nullable" => true),
             array("column" => "city", "type" => "string", "size" => 50, "nullable" => true),
             array("column" => "area", "type" => "string", "size" => 50, "nullable" => true),
             array("column" => "is_job_seeker", "type" => "boolean", "default" => 0),

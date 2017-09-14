@@ -202,53 +202,62 @@ class CustomMigrationsCommand extends Command {
             foreach ($lines as $key => $value) {
                 if ($key > 4 && strpos(json_encode($lines[$key - 4]), "up()") && strpos(json_encode($lines[$key - 2]), "Schema::")) { // For migrate => Alter / Create
                     foreach($row["columns"] as $colIndex => $colValue) {
-                        if ($colValue['type'] == 'string') {
-                            if(isset($colValue['size'])) {
-                                $column = "\$table->string('" . $colValue['column'] . "', " . $colValue['size'] . ")";
-                            } else {
-                                $column = "\$table->string('" . $colValue['column'] . "')";
-                            }
-                        } else if ($colValue['type'] == 'text') {
-                            $column = "\$table->text('" . $colValue['column'] . "')";
-                        } else if ($colValue['type'] == 'boolean') {
+                        // Column Type & Column Name
+                        if ($colValue['type'] == 'boolean') { // Type <Boolean>
                             $column = "\$table->boolean('" . $colValue['column'] . "')";
-                        } else if($colValue['type'] == 'integer') {
-                            $column = "\$table->integer('" . $colValue['column'] . "')";
-                        } else if($colValue['type'] == 'float') {
-                            if(isset($colValue['digit']) && isset($colValue['decimal_pt'])) {
-                                $column = "\$table->float('" . $colValue['column'] . "', " . $colValue['digit'] . ", " . $colValue['decimal_pt'] . ")";
-                            } else {
-                                $column = "\$table->float('" . $colValue['column']. "')";
-                            }
-                        } else if($colValue['type'] == 'decimal') {
+                        } else if($colValue['type'] == 'date') {// Type <Date>
+                            $column = "\$table->date('" . $colValue['column'] . "')";
+                        } else if($colValue['type'] == 'datetime') { // Type <DateTime>
+                            $column = "\$table->dateTime('" . $colValue['column'] . "')";
+                        } else if($colValue['type'] == 'decimal') { // Type <Decimal>
                             if(isset($colValue['precision']) && isset($colValue['scale'])) {
                                 $column = "\$table->decimal('" . $colValue['column'] . "', " . $colValue['precision'] . ", " . $colValue['scale'] . ")";
                             } else {
                                 $column = "\$table->decimal('" . $colValue['column'] . "')";
                             }
-                        } else if($colValue['type'] == 'date') {
-                            $column = "\$table->date('" . $colValue['column'] . "')";
-                        } else if($colValue['type'] == 'datetime') {
-                            $column = "\$table->dateTime('" . $colValue['column'] . "')";
-                        } else if($colValue['type'] == 'timestamp') {
-                            $column = "\$table->timestamp('" . $colValue['column'] . "')";
-                        } else if($colValue['type'] == 'increment') {
+                        } else if($colValue['type'] == 'float') { // Type <Float>
+                            if(isset($colValue['digit']) && isset($colValue['decimal_pt'])) {
+                                $column = "\$table->float('" . $colValue['column'] . "', " . $colValue['digit'] . ", " . $colValue['decimal_pt'] . ")";
+                            } else {
+                                $column = "\$table->float('" . $colValue['column']. "')";
+                            }
+                        } else if($colValue['type'] == 'increment') { // Type <Increment>
                             $column = "\$table->increments('" . $colValue['column'] . "')";
+                        } else if($colValue['type'] == 'integer') { // Type <Integer>
+                            $column = "\$table->integer('" . $colValue['column'] . "')";
+                        } else if($colValue['type'] == 'json') { // Type <JSON>
+                            $column = "\$table->json('" . $colValue['column'] . "')";
+                        } else if ($colValue['type'] == 'string') { // Type <String>
+                            if(isset($colValue['size'])) {
+                                $column = "\$table->string('" . $colValue['column'] . "', " . $colValue['size'] . ")";
+                            } else {
+                                $column = "\$table->string('" . $colValue['column'] . "')";
+                            }
+                        } else if ($colValue['type'] == 'text') { // Type <Text>
+                            $column = "\$table->text('" . $colValue['column'] . "')";
+                        } else if($colValue['type'] == 'timestamp') { // Type <TimeStamp>
+                            $column = "\$table->timestamp('" . $colValue['column'] . "')";
                         }
 
                         // Column Modifiers
-                        if (isset($colValue["comment"])) { // Assign if Comment Field is Assigned
-                            $column .= "->comment('" . $colValue["comment"] . "')";
+                        if (isset($colValue["after"]) && $colValue["after"]) { // Assign if after is enabled -> Only for MySQL
+                            $column .= "->after('" . $colValue["after"] . "')"; // Sets the Column after the Defined column
+                        }
+                        if (isset($colValue["comment"])) { // Assign if Comment Field is Assigned -> Only for MySQL
+                            $column .= "->comment('" . $colValue["comment"] . "')"; // Write a Comment in Column Header
                         }
                         if (isset($colValue["default"])) { // Assign if Default Field is Assigned
                             if (is_numeric($colValue["default"])) {
-                                $column .= "->default(" . $colValue["default"] . ")";
+                                $column .= "->default(" . $colValue["default"] . ")";// Set default <Number> value
                             } else {
-                                $column .= "->default('" . $colValue["default"] . "')";
+                                $column .= "->default('" . $colValue["default"] . "')"; // Set default <String> value
                             }
                         }
+                        if (isset($colValue["first"]) && $colValue["first"]) { // Assign if first is defined -> Only for MySQL
+                            $column .= "->first()"; // Assign the referred column first
+                        }
                         if (isset($colValue["nullable"]) && $colValue["nullable"]) { // Assign if nullable is enabled
-                            $column .= "->nullable()";
+                            $column .= "->nullable()"; // Sets the Default to NULL i.e. column is NULLABLE
                         }
                             
                         // $content .= "\t\t\t" . $column . ";\n";
