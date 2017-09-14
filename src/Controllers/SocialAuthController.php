@@ -58,10 +58,10 @@ class SocialAuthController extends Controller {
                     $user_resp = $userauthObj->updateOrCreateUser($social_data["user"], [], $social_data["user_comm"]);
                 }
 
-                if($user_resp["status"] == "success") {
+                if($user_resp["user"]) {
                     return ;
                 } else {
-                    return redirect(config('aj_user_config.social_failure_redirect_url')."?message=");
+                    return redirect(config('aj_user_config.social_failure_redirect_url'));//."?message=");
                 }
             }
         } else { //status == "error"

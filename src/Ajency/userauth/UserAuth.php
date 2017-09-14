@@ -10,6 +10,8 @@ use App\User;
 use App\UserCommunication;
 use App\UserDetail;
 use Ajency\User\Ajency\socialaccount\SocialAccountService;
+
+use Illuminate\Support\Facades\Hash;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 class UserAuth {
@@ -19,12 +21,15 @@ class UserAuth {
         try {
             if (isset($data["email"])) {
                 $comm = UserCommunication::where('value','=',$data['email'])->first(); // Check if this email ID exist in the User Communication DB
-                $user = User::where('id', '=', $comm->object_id)->first();
+                $user = $comm ? User::where('id', '=', $comm->object_id)->first() : NULL;
             } else if (isset($data["contact"])) {
                 $comm = UserCommunication::where('value','=',$data['contact'])->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
-                $user = User::where('id', '=', $comm->object_id)->first();
-            } else {
+                $user = $comm ? User::where('id', '=', $comm->object_id)->first() : NULL;
+            } /*else {
                 $user = User::where('email', '=', $data['username'])->first(); // Check if this Username exist in the User DB
+            }*/
+            if($user == NULL && isset($data["username"])) {
+               $user = User::where('email', '=', $data['username'])->first(); // Check if this Username exist in the User DB 
             }
         } catch (Exception $e) {
             $user = NULL;
@@ -48,10 +53,31 @@ class UserAuth {
     }
 
     public function isValidUser($data) { // Check if the User is Authenticated
-        if ($data && in_array($data["provider"], config('aj_user_config.social_account_provider'))) {
+        if ($data && in_array($data["provider"], config('aj_user_config.social_account_provider'))) { // If the Sign in / Sign up flow is via Social Account then the account is by default Valid
             return true;
-        } else {
-            return false;
+        } else { // The the signIn or SignUp flow is not via Social account signup, then
+
+        	/*$pattern = "/[a-zA-Z0-9_-.+]+@[a-zA-Z0-9-]+.[a-zA-Z]+/";
+        	$pattern = '/^(?!(?:(?:\\x22?\\x5C[\\x00-\\x7E]\\x22?)|(?:\\x22?[^\\x5C\\x22]\\x22?)){255,})(?!(?:(?:\\x22?\\x5C[\\x00-\\x7E]\\x22?)|(?:\\x22?[^\\x5C\\x22]\\x22?)){65,}@)(?:(?:[\\x21\\x23-\\x27\\x2A\\x2B\\x2D\\x2F-\\x39\\x3D\\x3F\\x5E-\\x7E]+)|(?:\\x22(?:[\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F\\x21\\x23-\\x5B\\x5D-\\x7F]|(?:\\x5C[\\x00-\\x7F]))*\\x22))(?:\\.(?:(?:[\\x21\\x23-\\x27\\x2A\\x2B\\x2D\\x2F-\\x39\\x3D\\x3F\\x5E-\\x7E]+)|(?:\\x22(?:[\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F\\x21\\x23-\\x5B\\x5D-\\x7F]|(?:\\x5C[\\x00-\\x7F]))*\\x22)))*@(?:(?:(?!.*[^.]{64,})(?:(?:(?:xn--)?[a-z0-9]+(?:-+[a-z0-9]+)*\\.){1,126}){1,}(?:(?:[a-z][a-z0-9]*)|(?:(?:xn--)[a-z0-9]+))(?:-+[a-z0-9]+)*)|(?:\\[(?:(?:IPv6:(?:(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){7})|(?:(?!(?:.*[a-f0-9][:\\]]){7,})(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,5})?::(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,5})?)))|(?:(?:IPv6:(?:(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){5}:)|(?:(?!(?:.*[a-f0-9]:){5,})(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,3})?::(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,3}:)?)))?(?:(?:25[0-5])|(?:2[0-4][0-9])|(?:1[0-9]{2})|(?:[1-9]?[0-9]))(?:\\.(?:(?:25[0-5])|(?:2[0-4][0-9])|(?:1[0-9]{2})|(?:[1-9]?[0-9]))){3}))\\]))$/iD';
+        	 preg_match($pattern, $data["username"]);*/
+
+        	if (filter_var($data["username"], FILTER_VALIDATE_EMAIL) && checkdnsrr(explode("@", $data["username"])[1])) { // Check if email-ID / username entered is Valid
+	            $user_obj = User::where('email', '=', $data["username"]);
+
+	            if($user_obj->count() > 0) {
+	                $user_obj = $user_obj->first();
+
+	                if (isset($data["password"]) && Hash::check($data["password"], $user_obj->password)) {
+	                    return true;
+	                } else {
+	                    return false;
+	                }
+	            } else {
+	                return false;
+	            }
+	        } else {
+	        	return false;
+	        }
         }
     }
 
@@ -83,9 +109,10 @@ class UserAuth {
         $output = new ConsoleOutput;
         
         try {
-            $response_data["authentic_user"] = $this->isValidUser($data);
             $user_object = $this->checkIfUserExists($data);
             $response_data["user"] = $user_object;
+
+            $response_data["authentic_user"] = $this->isValidUser($data); // Checks if the User-ID (& password {if it is Email Signup}) entered is matching
             
             if ($user_object && $provider == $user_object->signup_source && $user_object->status == "active") { // If user_object is Received & the Signup source provider is same then check if the required Fields are filled
                 $response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($user_object);
@@ -183,9 +210,7 @@ class UserAuth {
 
 	    		// unset($data[$type]); // Remove the Email / Contact from the 
 	    		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
-	    			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
-	    				$details[$datak] = $datav;
-	    			}
+	    			$details[$datak] = $datav;
 	    		}
 
 	    		$details->save();
@@ -195,9 +220,7 @@ class UserAuth {
 	            $details->user_id = $user_obj->id;
 
 				foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
-	    			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
-	    				$details[$datak] = $datav;
-	    			}
+	    			$details[$datak] = $datav;
 	    		}
 
 	            $details->save();
@@ -216,7 +239,7 @@ class UserAuth {
         $detail_response = NULL; $comm_response = NULL;
 
     	try {
-	        $output = new ConsoleOutput();
+	        $output = new ConsoleOutput;
 	        $object = $this->checkIfUserExists($user_data); // Check if the EMail ID exist
             $status = "success";
 	        $user_required_params = ['name', 'username', 'password', 'provider', 'status'];
@@ -248,10 +271,12 @@ class UserAuth {
 	            	$user->email = $user_data["username"];
         		}
 
-        		/*$user->name = isset($user_data["name"]) ? $user_data["name"] : $user->name;
-	            $user->password = isset($user_data["password"]) ? $user_data["password"] : $user->password;
-	            $user->signup_source = isset($user_data['provider']) ? $user_data['provider'] : $user->signup_source;
-	            $user->status = isset($user_data["status"]) ? $user_data["status"] : in_array($user_data["provider"], $status_active_provider) ? "active" : "inactive";*/
+        		/*
+        		 $user->name = isset($user_data["name"]) ? $user_data["name"] : $user->name;
+	             $user->password = isset($user_data["password"]) ? $user_data["password"] : $user->password;
+	             $user->signup_source = isset($user_data['provider']) ? $user_data['provider'] : $user->signup_source;
+	             $user->status = isset($user_data["status"]) ? $user_data["status"] : in_array($user_data["provider"], $status_active_provider) ? "active" : "inactive";
+	            */
 
 	            foreach($user_data as $datak => $datav) { // Update all the fields defined in the JSON data
         			if(!in_array($datak, $user_required_params)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
@@ -280,8 +305,8 @@ class UserAuth {
 
     public function getUserData($user_data, $is_id = false) { // Get all the User related details 
 
-    	$status = "success";
-    	$message = "";
+    	/*$status = "success";
+    	$message = "";*/
     	$user = NULL;
     	$user_details = NULL;
     	$user_comm = NULL;
@@ -295,13 +320,19 @@ class UserAuth {
 	    	}
 
 	    	$user = User::find($id);
-	    	$user_details = UserDetail::find($id);
+	    	try {
+	    		$user_details = $user->getUserDetails(); // Gets that Specific Data One-to-One Relation		
+	    	} catch (Exception $e) {
+	    		$user = UserDetail::where('user_id', '=', $user->id);
+	    	}
 	    	$user_comm = UserCommunication::where(['object_id', '=' , $id], ['object_type', '=', 'user']);
     	} catch (Exception $e) {
-    		$status = "error";
-    		$message = $e;
+    		$user = NULL;
+	    	$user_details = NULL;
+	    	$user_comm = NULL;
     	}
 
-    	return array("user" => $user, "user_details" => $user_details, "user_comm" => $user_comm, "status" => $status, "message" => $message);
+    	//return array("user" => $user, "user_details" => $user_details, "user_comm" => $user_comm, "status" => $status, "message" => $message);
+    	return array("user" => $user, "user_details" => $user_details, "user_comm" => $user_comm);
     }
 }
