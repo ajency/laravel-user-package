@@ -11,6 +11,7 @@ use App\UserCommunication;
 use App\UserDetail;
 use Ajency\User\Ajency\socialaccount\SocialAccountService;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Illuminate\Support\Facades\Hash;
 
 class UserAuth {
 	public function checkIfUserExists($data) {//, $getObject=false) {
@@ -19,12 +20,15 @@ class UserAuth {
         try {
             if (isset($data["email"])) {
                 $comm = UserCommunication::where('value','=',$data['email'])->first(); // Check if this email ID exist in the User Communication DB
-                $user = User::where('id', '=', $comm->object_id)->first();
+                $user = $comm ? User::where('id', '=', $comm->object_id)->first() : NULL;
             } else if (isset($data["contact"])) {
                 $comm = UserCommunication::where('value','=',$data['contact'])->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
-                $user = User::where('id', '=', $comm->object_id)->first();
-            } else {
+                $user = $comm ? User::where('id', '=', $comm->object_id)->first() : NULL;
+            } /*else {
                 $user = User::where('email', '=', $data['username'])->first(); // Check if this Username exist in the User DB
+            }*/
+            if($user == NULL && isset($data["username"])) {
+               $user = User::where('email', '=', $data['username'])->first(); // Check if this Username exist in the User DB 
             }
         } catch (Exception $e) {
             $user = NULL;
@@ -51,7 +55,21 @@ class UserAuth {
         if ($data && in_array($data["provider"], config('aj_user_config.social_account_provider'))) {
             return true;
         } else {
-            return false;
+            $output = new ConsoleOutput;
+
+            $user_obj = User::where('email', '=', $data["username"]);
+
+            if($user_obj->count() > 0) {
+                $user_obj = $user_obj->first();
+
+                if (isset($data["password"]) && Hash::check($data["password"], $user_obj->password)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
         }
     }
 
@@ -83,9 +101,10 @@ class UserAuth {
         $output = new ConsoleOutput;
         
         try {
-            $response_data["authentic_user"] = $this->isValidUser($data);
             $user_object = $this->checkIfUserExists($data);
             $response_data["user"] = $user_object;
+
+            $response_data["authentic_user"] = $this->isValidUser($data); // Checks if the User-ID (& password {if it is Email Signup}) entered is matching
             
             if ($user_object && $provider == $user_object->signup_source && $user_object->status == "active") { // If user_object is Received & the Signup source provider is same then check if the required Fields are filled
                 $response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($user_object);
@@ -169,12 +188,12 @@ class UserAuth {
 
     public function updateOrCreateUserDetails($user_obj, $data, $search_by_column='user_id', $search_column_value='') {
     	$response_data = []; $details = null;
-
+        $output = new ConsoleOutput;
     	try {
-	    	$details = UserDetail::where($search_by_column, '=', $search_column_value); // Get the UserDetail object
-	        	
-	    	if($details->count() > 0) { // Update Query, if the count is greater than ZERO
-	    		/*$details = $details->update([
+            $details = UserDetail::where($search_by_column, '=', $search_column_value); // Get the UserDetail object
+	        
+            if($details->count() > 0) { // Update Query, if the count is greater than ZERO
+                /*$details = $details->update([
 	    			'is_primary' => $data["is_primary"], 
 	    			'is_communication' => $data["is_communication"], 
 	    			'is_verified' => $data["is_verified"], 
@@ -183,30 +202,24 @@ class UserAuth {
 
 	    		// unset($data[$type]); // Remove the Email / Contact from the 
 	    		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
-	    			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
-	    				$details[$datak] = $datav;
-	    			}
+	    			$details[$datak] = $datav;
 	    		}
 
 	    		$details->save();
 	    	} else { // Insert Query
-	            $details = new UserDetail;
+                $details = new UserDetail;
 	            
 	            $details->user_id = $user_obj->id;
 
 				foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
-	    			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
-	    				$details[$datak] = $datav;
-	    			}
+	    			$details[$datak] = $datav;
 	    		}
-
-	            $details->save();
+                $details->save();
 	    	}
-	        
 
 	        $response_data = array("status" => "success", "data" => $details);
     	} catch (Exception $e) {
-    		$response_data = array("status" => "error", "data" => $details, "message" => $e);
+            $response_data = array("status" => "error", "data" => $details, "message" => $e);
     	}
 
         return $response_data;
@@ -262,7 +275,7 @@ class UserAuth {
 	            $user->save();
 	        }
             if(sizeof($detail_data) > 0) {
-            	$detail_response = $this->updateOrCreateUserDetails($user, $detail_data, 'user_id', $user->id);
+                $detail_response = $this->updateOrCreateUserDetails($user, $detail_data, 'user_id', $user->id);
                 $status = ($detail_response["status"] == "success") ? $status : "error";
             }
 
