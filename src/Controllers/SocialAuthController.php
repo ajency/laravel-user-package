@@ -92,7 +92,7 @@ class SocialAuthController extends Controller {
                         $user_resp = $userauthObj->getUserData($valid_response["user"]);
                     }
 
-                    if($user_resp["status"] == "success") {
+                    if($valid_response["user"]) { // If $valid_response["user"] == None, then Create/Update the User, User Details & User Communications
                         if ($valid_response["required_fields_filled"]) { // If the required fields are filled
                             return response()->json(array("next_url" => "", "status" => 200, "message" => "", "data" => "")); // Data should have JSON of USer, User Details & User Communication
                         } else { // Required fields are not Filled
