@@ -173,7 +173,7 @@ class CustomMigrationsCommand extends Command {
                 if ($lines["status"]) {
                     $extracted_content = $lines["data"];
                     // $user_model_content = "\n\tpublic function getUserDetails() { \n\t\t\$this->hasOne('App\UserDetail', 'user_id');\n\t}\n";
-                    $user_model_content = "\n" . $tab_spacing . "public function getUserDetails() { \n" . $tab_spacing . $tab_spacing . "\$this->hasOne('App\UserDetail', 'user_id');\n" .$tab_spacing . "}\n";
+                    $user_model_content = "\n" . $tab_spacing . "public function getUserDetails() { \n" . $tab_spacing . $tab_spacing . "return \$this->hasOne('App\UserDetail', 'user_id');\n" .$tab_spacing . "}\n";
                     array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // Insert the above function to the content
 
                     /*foreach ($extracted_content as $key_ec => $value_ec) {
@@ -187,7 +187,7 @@ class CustomMigrationsCommand extends Command {
                 if($lines["status"]) {
                     $extracted_content = $lines["data"];
                     // $user_details_model_content = "\n\tpublic function getUser() { \n\t\t\$this->belongsTo('App\User', 'user_id');\n\t}\n";
-                    $user_details_model_content = "\n" . $tab_spacing . "public function getUser() { \n" . $tab_spacing . $tab_spacing . "\$this->belongsTo('App\User', 'user_id');\n" . $tab_spacing ."}\n";
+                    $user_details_model_content = "\n" . $tab_spacing . "public function getUser() { \n" . $tab_spacing . $tab_spacing . "return \$this->belongsTo('App\User', 'user_id');\n" . $tab_spacing ."}\n";
                     array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_details_model_content); // 
 
                     $content = implode("", $lines["data"]); // Merge all the content

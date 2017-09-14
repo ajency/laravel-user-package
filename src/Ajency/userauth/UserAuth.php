@@ -12,9 +12,17 @@ use App\UserDetail;
 use Ajency\User\Ajency\socialaccount\SocialAccountService;
 
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 class UserAuth {
+	/**
+	* This function checks if the user with this email, contact or username (will be Email for Email Signup user & <id>@<config_domain><social_domain>.com for Social SignIn/SignUp).
+	* In this function the Email / Contact is verified with the UserCommunication table, & from it the User object is found. If none of the Details are found in UserCommunication, then
+	* using "username", we verify in the User table.
+	* If the User object is found, then the object is returned, else NULL
+	*/
 	public function checkIfUserExists($data) {//, $getObject=false) {
         $user = NULL;
         
@@ -52,6 +60,21 @@ class UserAuth {
         return $user;
     }
 
+    /**
+    * This function checks if the user who is Authenticating (as in Signing Up or Signing In [Email or Social account]) is valid.
+    * For Social signup/signin accounts like Google, Facebook, etc.. the response will be True, and
+    * for email SignIn, the Email is verified, as in the email is a valid & the domain in the Email address exist, if it exist then this email is used to check if the User exist &
+    * the password entered is matching. If it is Matching, then the User is a Valid / Authentic user.
+    * For email Signup, the flow is similar to SignIn, except that the password is not verified as the account doesn't exist, but if the Email & the domain in the email is valid, then the 
+    * Email is assumed to be Valid.
+    * 
+    * This function @return
+    * For Social SignIn account, it is TRUE
+    * For Email SignUp, it checks if the Email entered is valid & if the Domain in the Email, i.e. xxxxxx@<domain> Ex: xxxxxx@gmail.com & "gmail.com" is a Domain
+    *   and if the domain is valid, then return TRUE else FALSE
+    * For Email Signin, the flow is similar to SignUp, except that once Email is verified, a check in DB is made & once found, the Password is matched with one in DB.
+    *   If both the UserID & Password are same, then the account is Valid / Authentic & returns TRUE, else FALSE
+    */
     public function isValidUser($data) { // Check if the User is Authenticated
         if ($data && in_array($data["provider"], config('aj_user_config.social_account_provider'))) { // If the Sign in / Sign up flow is via Social Account then the account is by default Valid
             return true;
@@ -64,45 +87,92 @@ class UserAuth {
         	if (filter_var($data["username"], FILTER_VALIDATE_EMAIL) && checkdnsrr(explode("@", $data["username"])[1])) { // Check if email-ID / username entered & it's password entered is Valid
 	            $user_obj = User::where('email', '=', $data["username"]);
 
-	            if($user_obj->count() > 0) {
+	            if($user_obj->count() > 0) { // If the Email exist, then the flow is SignIn flow
 	                $user_obj = $user_obj->first();
 
 	                if (isset($data["password"]) && Hash::check($data["password"], $user_obj->password)) {
-	                    return true;
+	                    return true; // Return true as the Email & Password is correct
 	                } else {
-	                    return false;
+	                    return false; // Return false as the Password is Incorrect
 	                }
 	            } else { // Return true as the Email (& domain) is Valid, but the account doesn't exist
 	                return true;
 	            }
 	        } else {
-	        	return false;
+	        	return false; // Return false as the Email ID does not exist, i.e. the Email ID & the Domain is Fake.
 	        }
         }
     }
 
+    /**
+	* checkUserFilledRequiredFields(<User_Model_Object>) function is used to check if the reqired fields are filled & 
+	* if all the fields are filled with a value, then respond with "filled_required" = True & if 1 or more fields are not filled,
+	* then respond with the list of columns in format [<table1> -> <column1>, <table1> -> <column2>, .....]
+	*
+	* This function @return
+	* 	array("filled_reuqired" => true / false, "fields_to_be_filled" => [<table1> -> <column1>, <table1> -> <column2>, .....])
+    */
     public function checkUserFilledRequiredFields($user) { // Checks if the required Fields flag is selected or not
+    	$fields_not_filled = [];
+
     	$tables_n_cols = config('aj_user_config.table_required_fields');
 
-        if($user && $user->has_required_fields_filled) {
-            return array("filled_required" => true, "required_fields" => []);
-        } else {
+    	foreach ($tables_n_cols as $keyT => $valueT) {
+    		if (sizeof($valueT["columns"]) > 0) {
+    			$db_object = DB::table($valueT["table"])->select($valueT["columns"])->where($valueT["column_relating_to_user"], $user->id);
 
-            return array("filled_required" => false, "required_fields" => []);// Array of all the Fields not Filled
+    			if($valueT["table"] == "user_communications") { // If the Table is UserCommunication, then Add Extra WHERE condition
+    				$db_object->where('object_type', 'user');
+    			}
+
+	    		$db_array = json_decode(json_encode($db_object->first()), true);
+
+	    		foreach ($valueT["columns"] as $keyC => $valueC) {
+	    			if(isset($db_array[$valueC])) {
+	    				array_push($fields_not_filled, $valueT["table"]."-> ".$valueC); // <table_name> -> <column_name>
+	    			}
+	    		}
+	    	}
+    	}
+
+        if(sizeof($fields_not_filled) <= 0) {
+            return array("filled_required" => true, "fields_to_be_filled" => $fields_not_filled);
+        } else {
+            return array("filled_required" => false, "fields_to_be_filled" => $fields_not_filled); // Array of all the Fields not Filled
         }
     }
 
+    /**
+    * updateRequiredFields(<user_object>) function is wherein the function calls checkUserFilledRequiredFields(<User_Model_Object>) function & if the fields are filled,
+    * then update the "has_required_fields_filled" in User's table as True for that < User object >.
+    * If the Field is already True, then the function DOESN'T check if any required fields are NOT filled.
+    *
+    * This function @return
+    *	array("has_required_fields_filled" => true / false, "fields_to_be_filled" => [ < Response from checkUserFilledRequiredFields() > ])
+    */
     public function updateRequiredFields($user) { // Pass User object
     	// Update the "Required fields" Flag to True based on whether the Required Fields in the User_Details table are Filled or Not
 
-    	if(!$user->has_required_fields_filled) {
-    		$user->has_required_fields_filled = true;
+    	if(!$user->has_required_fields_filled) { // If the Required fields filled Flag is False, then check the Fields
+    		$check_response = $this->checkUserFilledRequiredFields($user);
+    		$user->has_required_fields_filled = $check_response["filled_required"]; // Update the value if all the Fields are updated
     		$user->save();
     	}
 
-    	return $user->has_required_fields_filled;
+    	return array("has_required_fields_filled" => $user->has_required_fields_filled, "fields_to_be_filled" => $check_response["fields_to_be_filled"]);
     }
 
+    /**
+    * validateUserLogin(<data-Array[Key-Value format]>, <SignIn Type / Provider>) function takes in $data which contains an array of User data, & the 2nd Param containing the
+    * type of Signup like google, facebook,. ....., email_signup.
+    * This function validates the details by calling the following functions:
+    * - checkIfUserExists(<user_data>) => Response: <User_Object>
+    * - isValidUser(<user_data>) => Response: True / False
+    * - checkUserFilledRequiredFields(<user_object>) => Response: True / False & Columns to be added
+	*
+	* This function @return 
+	*	array("user" => <user_object>, "authentic_user" => true/false, "required_fields_filled" => true / false, "status" => 'success' / 'error', "message" => "")
+    */
     public function validateUserLogin($data, $provider) { // Validate if User is Authenticated & has all the required fields
         $response_data = [];
 
@@ -139,6 +209,9 @@ class UserAuth {
         return $response_data;
     }
 
+    /**
+    *
+    */
     public function updateOrCreateUserComm($user_obj, $data) {
     	$response_data = [];
 
@@ -194,6 +267,9 @@ class UserAuth {
         return $response_data;
     }
 
+    /**
+    *
+    */
     public function updateOrCreateUserDetails($user_obj, $data, $search_by_column='user_id', $search_column_value='') {
     	$response_data = []; $details = null;
 
@@ -235,6 +311,9 @@ class UserAuth {
         return $response_data;
     }
 
+    /**
+    *
+    */
     public function updateOrCreateUser($user_data, $detail_data = [], $comm_data = []) {
         $detail_response = NULL; $comm_response = NULL;
 
@@ -303,6 +382,13 @@ class UserAuth {
         return array("user" => $user, "user_details" => isset($detail_response["data"]) ? $detail_response["data"] : $detail_response, "user_comm" => isset($comm_response["data"]) ? $comm_response["data"] : $comm_response, "status" => $status);
     }
 
+    /**
+    * This function is similar to updateOrCreateUser() with respect to the Response, that is on passing the <User_object> or User ID, the response will be DB object of
+    * User, User Details & User Communication
+    *
+    * This function @return
+    * 	array("user" => <user_object>, "user_details" => <user_details_object>, "user_comm" => <user_communication_object>)
+    */
     public function getUserData($user_data, $is_id = false) { // Get all the User related details 
 
     	/*$status = "success";
