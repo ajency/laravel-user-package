@@ -249,7 +249,7 @@ class UserAuth {
             	} else { // Insert Query
 	                $comm = new UserCommunication;
 	                $comm->object_id = $user_obj->id;
-	                $comm->object_type = 'user';
+	                $comm->object_type = 'App\User';
 
 	                // If type == contact then ("contact_type" exist then $data["contact_type"] else "mobile") Else "Email" / $type
 	                $comm->type = ($type == "contact") ? (isset($data["contact_type"]) ? $data["contact_type"]: "mobile") : $type; 

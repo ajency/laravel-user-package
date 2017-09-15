@@ -168,12 +168,19 @@ class CustomMigrationsCommand extends Command {
             // $tab_spacing = "\t";
             $tab_spacing = "    "; // 4 x <spaces> instead of \t -> for Content Display
 
-            if(isset($row["model"]) && $row["model"] == "UserDetail" && $row["status"] == "create") {
+            if(isset($row["model"]) && $row["model"] == "UserDetail" && $row["status"] == "create") { // If UserDetail is being created, then
                 $lines = $this->readFromFile("./app/User.php");
                 if ($lines["status"]) {
                     $extracted_content = $lines["data"];
                     // $user_model_content = "\n\tpublic function getUserDetails() { \n\t\t\$this->hasOne('App\UserDetail', 'user_id');\n\t}\n";
-                    $user_model_content = "\n" . $tab_spacing . "public function getUserDetails() { \n" . $tab_spacing . $tab_spacing . "return \$this->hasOne('App\UserDetail', 'user_id');\n" .$tab_spacing . "}\n";
+                    /*$user_model_content = "\n" . $tab_spacing . "public function getUserDetails() { \n" . $tab_spacing . $tab_spacing . "return \$this->hasOne('App\UserDetail', 'user_id');\n" .$tab_spacing . "}\n";*/
+
+                    // Heredoc syntax
+                    $user_model_content = <<<EOD
+    public function getUserDetails() {
+        return \$this->hasOne('App\UserDetail', 'user_id');
+    }
+EOD; // closing 'EOD' must be on it's own line, and to the left most point
                     array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // Insert the above function to the content
 
                     /*foreach ($extracted_content as $key_ec => $value_ec) {
@@ -187,7 +194,54 @@ class CustomMigrationsCommand extends Command {
                 if($lines["status"]) {
                     $extracted_content = $lines["data"];
                     // $user_details_model_content = "\n\tpublic function getUser() { \n\t\t\$this->belongsTo('App\User', 'user_id');\n\t}\n";
-                    $user_details_model_content = "\n" . $tab_spacing . "public function getUser() { \n" . $tab_spacing . $tab_spacing . "return \$this->belongsTo('App\User', 'user_id');\n" . $tab_spacing ."}\n";
+                    /*$user_details_model_content = "\n" . $tab_spacing . "public function getUser() { \n" . $tab_spacing . $tab_spacing . "return \$this->belongsTo('App\User', 'user_id');\n" . $tab_spacing ."}\n";*/
+
+                    $user_details_model_content = <<<EOD
+    public function getUser() {
+        return \$this->belongsTo('App\User', 'user_id');
+    }
+EOD;
+                    array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_details_model_content); // 
+
+                    $content = implode("", $lines["data"]); // Merge all the content
+                    $this->writeToFile("./app/".$row["model"].".php", $content);
+                }
+            } else if(isset($row["model"]) && $row["model"] == "UserCommunication" && $row["status"] == "create") {
+                $lines = $this->readFromFile("./app/User.php");
+                if ($lines["status"]) {
+                    $extracted_content = $lines["data"];
+                    
+                    $user_model_content = <<<EOD
+    public function getUserCommunications() { // Get all the communication related to that user
+        return \$this->hasMany('App\UserCommunication', 'object_id')->where('object_type', 'user');
+    }
+
+    public function getPrimaryEmail() { // Get the primary Email
+        return \$this->hasMany('App\UserCommunication', 'object_id')->where([['object_type','user'], ['type', 'email'], ['is_primary', true]]);
+    }
+
+    public function getPrimaryContact() { // Get the Primary Contact No
+        return \$this->hasMany('App\UserCommunication', 'object_id')->where([['object_type','user'], ['is_primary', true]])->whereIn('type', ["telephone", "mobile"]);
+    }
+EOD;
+                    array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // Insert the above function to the content
+
+                    /*foreach ($extracted_content as $key_ec => $value_ec) {
+                        $content .= $value_ec;
+                    }*/
+                    $content = implode("", $lines["data"]);
+                    $this->writeToFile("./app/User.php", $content);
+                }
+                
+                $lines = $this->readFromFile("./app/".$row["model"].".php");
+                if($lines["status"]) {
+                    $extracted_content = $lines["data"];
+                    
+                    $user_comm_model_content = <<<EOD
+    public function getUser() { // Get User related to that communication or set of Communications
+        return \$this->belongsTo('App\User', 'object_id');
+    }
+EOD;
                     array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_details_model_content); // 
 
                     $content = implode("", $lines["data"]); // Merge all the content
