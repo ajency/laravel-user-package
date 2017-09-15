@@ -260,7 +260,7 @@ class UserAuth {
 	            	}
 	            }
 	        } catch (Exception $e) {
-	        	$output->writeln("Error 123321: " . $e);
+	        	
 	        }
 
             $response_data = array("status" => "success", "data" => $comm);
