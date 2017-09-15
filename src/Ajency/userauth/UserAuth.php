@@ -379,7 +379,7 @@ class UserAuth {
                 $comm_response = $this->updateOrCreateUserComm($user, $comm_data);
                 $status = ($comm_response["status"] == "success") ? $status : "error";
             }
-            $required_fields_filled = $this->checkUserFilledRequiredFields($user_object);
+            $required_fields_filled = $this->checkUserFilledRequiredFields($user);
 
 	    } catch(Exception $e) {
             $status = "error";
@@ -417,7 +417,7 @@ class UserAuth {
 	    	}
 	    	$response_data["user_comm"] = UserCommunication::where([ ['object_id', '=' , $id], ['object_type', '=', 'user'] ])->get();
 
-	    	$response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($user_object);
+	    	$response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($response_data["user"]);
     	} catch (Exception $e) {
     		$response_data = array("user" => NULL, "user_details" => NULL, "user_comm" => NULL, "required_fields_filled" => []);
     	}
