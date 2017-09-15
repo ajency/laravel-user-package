@@ -119,19 +119,23 @@ class UserAuth {
 
     	foreach ($tables_n_cols as $keyT => $valueT) {
     		if (sizeof($valueT["columns"]) > 0) {
-    			$db_object = DB::table($valueT["table"])->select($valueT["columns"])->where($valueT["column_relating_to_user"], $user->id);
+                try {
+                    $db_object = DB::table($valueT["table"])->select($valueT["columns"])->where($valueT["column_relating_to_user"], $user->id);
 
-    			if($valueT["table"] == "user_communications") { // If the Table is UserCommunication, then Add Extra WHERE condition
-    				$db_object->where('object_type', 'user');
-    			}
+                    if($valueT["table"] == "user_communications") { // If the Table is UserCommunication, then Add Extra WHERE condition
+        				$db_object->where('object_type', 'user');
+        			}
 
-	    		$db_array = json_decode(json_encode($db_object->first()), true);
+    	    		$db_array = json_decode(json_encode($db_object->first()), true);
 
-	    		foreach ($valueT["columns"] as $keyC => $valueC) {
-	    			if(isset($db_array[$valueC])) {
-	    				array_push($fields_not_filled, $valueT["table"]."-> ".$valueC); // <table_name> -> <column_name>
-	    			}
-	    		}
+    	    		foreach ($valueT["columns"] as $keyC => $valueC) {
+    	    			if(isset($db_array[$valueC])) {
+    	    				array_push($fields_not_filled, $valueT["table"]."-> ".$valueC); // <table_name> -> <column_name>
+    	    			}
+    	    		}
+                } catch (Exception $e) {
+                    
+                }
 	    	}
     	}
 
@@ -222,46 +226,43 @@ class UserAuth {
             (isset($data['email']) && $data['email']) ? array_push($types, 'email') : ''; // If email field exist & the value is not NULL
             (isset($data['contact']) && isset($data['contact']) && $data['contact']) ? array_push($types, 'contact') : ''; // If contact field exist & the value is not NULL
 
-            try {
-	            foreach ($types as $key => $type) { // Loop through Communication types
-	                $comm = UserCommunication::where('value','=',$data[$type]); // Get the UserComm object
-	            	if($comm->count() > 0) { // Update Query, if the count is greater than ZERO
-	            		$comm = $comm->first();
-	            		/*$comm = $comm->update([
-	            			'is_primary' => $data["is_primary"], 
-	            			'is_communication' => $data["is_communication"], 
-	            			'is_verified' => $data["is_verified"], 
-	            			'is_visible' => $data["is_visible"]
-	            		]);*/
+            foreach ($types as $key => $type) { // Loop through Communication types
+                $comm = UserCommunication::where('value','=',$data[$type]); // Get the UserComm object
+            	if($comm->count() > 0) { // Update Query, if the count is greater than ZERO
+            		$comm = $comm->first();
+            		/*$comm = $comm->update([
+            			'is_primary' => $data["is_primary"], 
+            			'is_communication' => $data["is_communication"], 
+            			'is_verified' => $data["is_verified"], 
+            			'is_visible' => $data["is_visible"]
+            		]);*/
 
-	            		// unset($data[$type]); // Remove the Email / Contact from the 
-	            		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
-	            			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
-	            				$comm[$datak] = $datav;
-	            			}
-	            		}
+            		// unset($data[$type]); // Remove the Email / Contact from the 
+            		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
+                        $output->writeln($datak);
+            			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
+            				$comm[$datak] = $datav;
+            			}
+            		}
 
-	                    $comm->save();
-	            	} else { // Insert Query
-		                $comm = new UserCommunication;
-		                $comm->object_id = $user_obj->id;
-		                $comm->object_type = 'user';
+                    $comm->save();
+            	} else { // Insert Query
+	                $comm = new UserCommunication;
+	                $comm->object_id = $user_obj->id;
+	                $comm->object_type = 'user';
 
-		                // If type == contact then ("contact_type" exist then $data["contact_type"] else "mobile") Else "Email" / $type
-		                $comm->type = ($type == "contact") ? (isset($data["contact_type"]) ? $data["contact_type"]: "mobile") : $type; 
-		                $comm->value = $data[$type];
-		                
-		                $comm->is_primary = isset($data["is_primary"]) ? $data['is_primary'] : false;
-		                $comm->is_communication = isset($data["is_communication"]) ? $data['is_communication'] : false;
-		                $comm->is_verified = isset($data["is_verified"]) ? $data['is_verified'] : false;
-		                $comm->is_visible = isset($data["is_visible"]) ? $data['is_visible'] : false;
-		    
-		                $comm->save();
-	            	}
-	            }
-	        } catch (Exception $e) {
-	        	
-	        }
+	                // If type == contact then ("contact_type" exist then $data["contact_type"] else "mobile") Else "Email" / $type
+	                $comm->type = ($type == "contact") ? (isset($data["contact_type"]) ? $data["contact_type"]: "mobile") : $type; 
+	                $comm->value = $data[$type];
+	                
+	                $comm->is_primary = isset($data["is_primary"]) ? $data['is_primary'] : false;
+	                $comm->is_communication = isset($data["is_communication"]) ? $data['is_communication'] : false;
+	                $comm->is_verified = isset($data["is_verified"]) ? $data['is_verified'] : false;
+	                $comm->is_visible = isset($data["is_visible"]) ? $data['is_visible'] : false;
+	    
+	                $comm->save();
+            	}
+            }
 
             $response_data = array("status" => "success", "data" => $comm);
         } else { // Else required parameters are not passed
@@ -401,6 +402,7 @@ class UserAuth {
     	$message = "";*/
     	$response_data = array("user" => NULL, "user_details" => NULL, "user_comm" => NULL);
 
+        $output = new ConsoleOutput;
     	try {
 
 	    	if(!$is_id) {
@@ -409,15 +411,16 @@ class UserAuth {
 	    		$id = $user_data;
 	    	}
 
-	    	$response_data["user"] = User::find($id);
-	    	try {
-	    		$response_data["user_details"] = $response_data["user"]->getUserDetails()->get(); // Gets that Specific Data One-to-One Relation		
+            $response_data["user"] = User::find($id);
+            
+            try {
+                $response_data["user_details"] = $response_data["user"]->getUserDetails()->get(); // Gets that Specific Data One-to-One Relation		
 	    	} catch (Exception $e) {
 	    		$response_data["user_details"] = UserDetail::where('user_id', '=', $response_data["user"]->id)->get();
 	    	}
-	    	$response_data["user_comm"] = UserCommunication::where([ ['object_id', '=' , $id], ['object_type', '=', 'user'] ])->get();
-
-	    	$response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($response_data["user"]);
+            
+            $response_data["user_comm"] = UserCommunication::where([['object_id', '=' , $id], ['object_type', '=', 'user']])->get();
+            $response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($response_data["user"]);
     	} catch (Exception $e) {
     		$response_data = array("user" => NULL, "user_details" => NULL, "user_comm" => NULL, "required_fields_filled" => []);
     	}
