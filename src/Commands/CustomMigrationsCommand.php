@@ -173,14 +173,14 @@ class CustomMigrationsCommand extends Command {
                 if ($lines["status"]) {
                     $extracted_content = $lines["data"];
                     // $user_model_content = "\n\tpublic function getUserDetails() { \n\t\t\$this->hasOne('App\UserDetail', 'user_id');\n\t}\n";
-                    /*$user_model_content = "\n" . $tab_spacing . "public function getUserDetails() { \n" . $tab_spacing . $tab_spacing . "return \$this->hasOne('App\UserDetail', 'user_id');\n" .$tab_spacing . "}\n";*/
+                    $user_model_content = "\n" . $tab_spacing . "public function getUserDetails() { \n" . $tab_spacing . $tab_spacing . "return \$this->hasOne('App\UserDetail', 'user_id');\n" .$tab_spacing . "}\n";
 
                     // Heredoc syntax
-                    $user_model_content = <<<EOD
+                    $user_model_content = "";/*<<<EOD
     public function getUserDetails() {
         return \$this->hasOne('App\UserDetail', 'user_id');
     }
-EOD; // closing 'EOD' must be on it's own line, and to the left most point
+EOD;*/ // closing 'EOD' must be on it's own line, and to the left most point
                     array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // Insert the above function to the content
 
                     /*foreach ($extracted_content as $key_ec => $value_ec) {
@@ -194,13 +194,13 @@ EOD; // closing 'EOD' must be on it's own line, and to the left most point
                 if($lines["status"]) {
                     $extracted_content = $lines["data"];
                     // $user_details_model_content = "\n\tpublic function getUser() { \n\t\t\$this->belongsTo('App\User', 'user_id');\n\t}\n";
-                    /*$user_details_model_content = "\n" . $tab_spacing . "public function getUser() { \n" . $tab_spacing . $tab_spacing . "return \$this->belongsTo('App\User', 'user_id');\n" . $tab_spacing ."}\n";*/
+                    $user_details_model_content = "\n" . $tab_spacing . "public function getUser() { \n" . $tab_spacing . $tab_spacing . "return \$this->belongsTo('App\User', 'user_id');\n" . $tab_spacing ."}\n";
 
-                    $user_details_model_content = <<<EOD
+                    $user_details_model_content = "";/*<<<EOD
     public function getUser() {
         return \$this->belongsTo('App\User', 'user_id');
     }
-EOD;
+EOD;*/
                     array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_details_model_content); // 
 
                     $content = implode("", $lines["data"]); // Merge all the content
@@ -211,7 +211,7 @@ EOD;
                 if ($lines["status"]) {
                     $extracted_content = $lines["data"];
                     
-                    $user_model_content = <<<EOD
+                    $user_model_content = "";/*<<<EOD
     public function getUserCommunications() { // Get all the communication related to that user
         return \$this->hasMany('App\UserCommunication', 'object_id')->where('object_type', 'user');
     }
@@ -223,7 +223,7 @@ EOD;
     public function getPrimaryContact() { // Get the Primary Contact No
         return \$this->hasMany('App\UserCommunication', 'object_id')->where([['object_type','user'], ['is_primary', true]])->whereIn('type', ["telephone", "mobile"]);
     }
-EOD;
+EOD;*/
                     array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // Insert the above function to the content
 
                     /*foreach ($extracted_content as $key_ec => $value_ec) {
@@ -237,11 +237,11 @@ EOD;
                 if($lines["status"]) {
                     $extracted_content = $lines["data"];
                     
-                    $user_comm_model_content = <<<EOD
+                    $user_comm_model_content = "";/*<<<EOD
     public function getUser() { // Get User related to that communication or set of Communications
         return \$this->belongsTo('App\User', 'object_id');
     }
-EOD;
+EOD;*/
                     array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_details_model_content); // 
 
                     $content = implode("", $lines["data"]); // Merge all the content
