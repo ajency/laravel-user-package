@@ -1,7 +1,7 @@
 # Ajency Laravel User Authentication Package
 
-- Version 1.4
-- Updated on 12 Sept 2017
+- Version 1.5
+- Updated on 15 Sept 2017
 
 ## Description
 Contains Email Signup &amp; Social Auth, generating User Details (User Meta), User Communications Table &amp; Alter of Users Table with columns defined by user.
