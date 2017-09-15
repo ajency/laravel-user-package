@@ -20,11 +20,17 @@ use Ajency\User\Ajency\socialaccount\SocialAccountService;
 use Ajency\User\Ajency\userauth\UserAuth;
 
 class SocialAuthController extends Controller {
+    /**
+    *
+    */
     public function urlSocialAuthRedirect($provider) { // for Provider authentication -> Provider = ['Google', 'Facebook']
         //Session::put('url.failed', URL::previous());
         return Socialite::driver($provider)->redirect();
     }
 
+    /**
+    *
+    */
     public function urlSocialAuthCallback(SocialAccountService $service, Request $request, $provider) { // after 'Provider' authentication & redirection
         
         /*$url = Session::get('url.failed', url('/'));
@@ -41,11 +47,11 @@ class SocialAuthController extends Controller {
         $valid_response = $userauthObj->validateUserLogin($social_data["user"], $provider);
         
         /*
+         $userauthObj->validateUserLogin() Response:
          "$response" => Returns [
             'status' -> Status of the Response, 
             'user' -> User Object from DB,
-            'authentic_user' -> If the Logged-In source of the User is Authentic (as in If it is "SocialAccount" then it is "Authentic" by Default; else If "Email Signup", then "Email verification" is necessary & if verified, then the account is "Authentic".),
-            'required_fields_filled' -> Flag that defines if the required fields are Filled by User or Not
+            'authentic_user' -> If the Logged-In source of the User is Authentic (as in If it is "SocialAccount" then it is "Authentic" by Default; else If "Email Signup", then "Email verification" is necessary & if verified, then the account is "Authentic".)
          ]
         */
 
@@ -70,7 +76,9 @@ class SocialAuthController extends Controller {
     }
     
     
-
+    /**
+    *
+    */
     public function apiSocialAuth(Request $request, $provider) {
         try {
             //$output = new ConsoleOutput();
@@ -93,7 +101,7 @@ class SocialAuthController extends Controller {
                     }
 
                     if($valid_response["user"]) { // If $valid_response["user"] == None, then Create/Update the User, User Details & User Communications
-                        if ($valid_response["required_fields_filled"]) { // If the required fields are filled
+                        if ($user_resp["required_fields_filled"]) { // If the required fields are filled
                             return response()->json(array("next_url" => "", "status" => 200, "message" => "", "data" => "")); // Data should have JSON of USer, User Details & User Communication
                         } else { // Required fields are not Filled
                             return response()->json(array("next_url" => "", "status" => 200, "message" => "", "data" => ""));

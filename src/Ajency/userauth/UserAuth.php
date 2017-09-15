@@ -184,8 +184,7 @@ class UserAuth {
 
             $response_data["authentic_user"] = $this->isValidUser($data); // Checks if the User-ID (& password {if it is Email Signup}) entered is matching
             
-            if ($user_object && $provider == $user_object->signup_source && $user_object->status == "active") { // If user_object is Received & the Signup source provider is same then check if the required Fields are filled
-                $response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($user_object);
+            if ($user_object && $provider == $user_object->signup_source && $user_object->status == "active") { // If user_object is Received & the Signup source provider is same
                 $response_data["status"] = "success";
                 $response_data["message"] = "account_found";
             } else {
@@ -226,6 +225,7 @@ class UserAuth {
             foreach ($types as $key => $type) { // Loop through Communication types
                 $comm = UserCommunication::where('value','=',$data[$type]); // Get the UserComm object
             	if($comm->count() > 0) { // Update Query, if the count is greater than ZERO
+            		$comm = $comm->first();
             		/*$comm = $comm->update([
             			'is_primary' => $data["is_primary"], 
             			'is_communication' => $data["is_communication"], 
@@ -277,6 +277,7 @@ class UserAuth {
 	    	$details = UserDetail::where($search_by_column, '=', $search_column_value); // Get the UserDetail object
 	        	
 	    	if($details->count() > 0) { // Update Query, if the count is greater than ZERO
+	    		$details = $details->first();
 	    		/*$details = $details->update([
 	    			'is_primary' => $data["is_primary"], 
 	    			'is_communication' => $data["is_communication"], 
@@ -315,7 +316,7 @@ class UserAuth {
     *
     */
     public function updateOrCreateUser($user_data, $detail_data = [], $comm_data = []) {
-        $detail_response = NULL; $comm_response = NULL;
+        $detail_response = NULL; $comm_response = NULL; $required_fields_filled = NULL;
 
     	try {
 	        $output = new ConsoleOutput;
@@ -374,12 +375,13 @@ class UserAuth {
                 $comm_response = $this->updateOrCreateUserComm($user, $comm_data);
                 $status = ($comm_response["status"] == "success") ? $status : "error";
             }
+            $required_fields_filled = $this->checkUserFilledRequiredFields($user_object);
 
 	    } catch(Exception $e) {
             $status = "error";
 	    }
 
-        return array("user" => $user, "user_details" => isset($detail_response["data"]) ? $detail_response["data"] : $detail_response, "user_comm" => isset($comm_response["data"]) ? $comm_response["data"] : $comm_response, "status" => $status);
+        return array("user" => $user, "user_details" => isset($detail_response["data"]) ? $detail_response["data"] : $detail_response, "user_comm" => isset($comm_response["data"]) ? $comm_response["data"] : $comm_response, "status" => $status, "required_fields_filled" => $required_fields_filled);
     }
 
     /**
@@ -393,9 +395,7 @@ class UserAuth {
 
     	/*$status = "success";
     	$message = "";*/
-    	$user = NULL;
-    	$user_details = NULL;
-    	$user_comm = NULL;
+    	$response_data = array("user" => NULL, "user_details" => NULL, "user_comm" => NULL);
 
     	try {
 
@@ -405,20 +405,20 @@ class UserAuth {
 	    		$id = $user_data;
 	    	}
 
-	    	$user = User::find($id);
+	    	$response_data["user"] = User::find($id);
 	    	try {
-	    		$user_details = $user->getUserDetails(); // Gets that Specific Data One-to-One Relation		
+	    		$response_data["user_details"] = $response_data["user"]->getUserDetails()->get(); // Gets that Specific Data One-to-One Relation		
 	    	} catch (Exception $e) {
-	    		$user = UserDetail::where('user_id', '=', $user->id);
+	    		$response_data["user_details"] = UserDetail::where('user_id', '=', $response_data["user"]->id)->get();
 	    	}
-	    	$user_comm = UserCommunication::where(['object_id', '=' , $id], ['object_type', '=', 'user']);
+	    	$response_data["user_comm"] = UserCommunication::where(['object_id', '=' , $id], ['object_type', '=', 'user'])->get();
+
+	    	$response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($user_object);
     	} catch (Exception $e) {
-    		$user = NULL;
-	    	$user_details = NULL;
-	    	$user_comm = NULL;
+    		$response_data = array("user" => NULL, "user_details" => NULL, "user_comm" => NULL, "required_fields_filled" => []);
     	}
 
     	//return array("user" => $user, "user_details" => $user_details, "user_comm" => $user_comm, "status" => $status, "message" => $message);
-    	return array("user" => $user, "user_details" => $user_details, "user_comm" => $user_comm);
+    	return $response_data;
     }
 }
