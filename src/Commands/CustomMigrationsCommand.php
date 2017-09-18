@@ -242,7 +242,7 @@ EOD;*/
         return \$this->belongsTo('App\User', 'object_id');
     }
 EOD;*/
-                    array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_details_model_content); // 
+                    array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_comm_model_content); // 
 
                     $content = implode("", $lines["data"]); // Merge all the content
                     $this->writeToFile("./app/".$row["model"].".php", $content);
