@@ -37,7 +37,7 @@ class SocialAccountService {
             "user" => array(
                 "username" => ((string)$providerUser->id).'@'.$email_domain.strtolower($provider).".in", 
                 "name" => $providerUser->name, 
-                "password" => Hash::make(str_random(10)), 
+                "password" => str_random(10),
                 "provider" => $provider,
                 "email" => $providerUser->email,
             ),
