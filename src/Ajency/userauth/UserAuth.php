@@ -123,7 +123,7 @@ class UserAuth {
                     $db_object = DB::table($valueT["table"])->select($valueT["columns"])->where($valueT["column_relating_to_user"], $user->id);
 
                     if($valueT["table"] == "user_communications") { // If the Table is UserCommunication, then Add Extra WHERE condition
-        				$db_object->where('object_type', 'user');
+        				$db_object->where('object_type', 'App\User');
         			}
 
     	    		$db_array = json_decode(json_encode($db_object->first()), true);
@@ -161,7 +161,9 @@ class UserAuth {
     		$check_response = $this->checkUserFilledRequiredFields($user);
     		$user->has_required_fields_filled = $check_response["filled_required"]; // Update the value if all the Fields are updated
     		$user->save();
-    	}
+    	} else {
+            $check_response = array("fields_to_be_filled" => []);
+        }
 
     	return array("has_required_fields_filled" => $user->has_required_fields_filled, "fields_to_be_filled" => $check_response["fields_to_be_filled"]);
     }
@@ -249,7 +251,7 @@ class UserAuth {
             	} else { // Insert Query
 	                $comm = new UserCommunication;
 	                $comm->object_id = $user_obj->id;
-	                $comm->object_type = 'App\User';
+	                $comm->object_type = isset($data["object_type"]) ? $data["object_type"] : 'App\User';
 
 	                // If type == contact then ("contact_type" exist then $data["contact_type"] else "mobile") Else "Email" / $type
 	                $comm->type = ($type == "contact") ? (isset($data["contact_type"]) ? $data["contact_type"]: "mobile") : $type; 
@@ -419,7 +421,7 @@ class UserAuth {
 	    		$response_data["user_details"] = UserDetail::where('user_id', '=', $response_data["user"]->id)->get();
 	    	}
             
-            $response_data["user_comm"] = UserCommunication::where([['object_id', '=' , $id], ['object_type', '=', 'user']])->get();
+            $response_data["user_comm"] = UserCommunication::where([['object_id', '=' , $id], ['object_type', '=', 'App\User']])->get();
             $response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($response_data["user"]);
     	} catch (Exception $e) {
     		$response_data = array("user" => NULL, "user_details" => NULL, "user_comm" => NULL, "required_fields_filled" => []);

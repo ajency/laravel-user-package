@@ -213,15 +213,15 @@ EOD;*/
                     
                     $user_model_content = "";/*<<<EOD
     public function getUserCommunications() { // Get all the communication related to that user
-        return \$this->hasMany('App\UserCommunication', 'object_id')->where('object_type', 'user');
+        return \$this->hasMany('App\UserCommunication', 'object_id')->where('object_type', 'App\User');
     }
 
     public function getPrimaryEmail() { // Get the primary Email
-        return \$this->hasMany('App\UserCommunication', 'object_id')->where([['object_type','user'], ['type', 'email'], ['is_primary', true]]);
+        return \$this->hasMany('App\UserCommunication', 'object_id')->where([['object_type','App\User'], ['type', 'email'], ['is_primary', true]]);
     }
 
     public function getPrimaryContact() { // Get the Primary Contact No
-        return \$this->hasMany('App\UserCommunication', 'object_id')->where([['object_type','user'], ['is_primary', true]])->whereIn('type', ["telephone", "mobile"]);
+        return \$this->hasMany('App\UserCommunication', 'object_id')->where([['object_type','App\User'], ['is_primary', true]])->whereIn('type', ["telephone", "mobile"]);
     }
 EOD;*/
                     array_splice($lines["data"], count($extracted_content) - array_search("}\n", array_reverse($extracted_content)) - 1, 0, $user_model_content); // Insert the above function to the content
