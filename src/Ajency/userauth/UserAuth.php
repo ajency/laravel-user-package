@@ -337,7 +337,7 @@ class UserAuth {
 
                 $user->name = $user_data["name"];
 	            $user->email = $user_data["username"];
-                $user->password = $user_data["password"];
+                $user->password = (isset($user_data["password"])) ? Hash::make($user_data["password"]) : Hash::make(str_random(10));
                 $user->signup_source = $user_data['provider'];
                 $user->status = in_array($user_data["provider"], $status_active_provider) ? "active" : "inactive"; // If provider is in the List, then activate, else Inactive
                 
