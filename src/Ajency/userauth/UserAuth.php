@@ -129,7 +129,7 @@ class UserAuth {
     	    		$db_array = json_decode(json_encode($db_object->first()), true);
 
     	    		foreach ($valueT["columns"] as $keyC => $valueC) {
-    	    			if(isset($db_array[$valueC])) {
+    	    			if(!isset($db_array[$valueC])) { // If not existing, then
     	    				array_push($fields_not_filled, $valueT["table"]."-> ".$valueC); // <table_name> -> <column_name>
     	    			}
     	    		}
