@@ -281,7 +281,11 @@ class UserAuth {
     	$response_data = []; $details = null;
 
     	try {
-	    	$details = UserDetail::where($search_by_column, '=', $search_column_value); // Get the UserDetail object
+    		if(!$search_column_value) { // If NULL, then refer the UserID
+	    		$details = UserDetail::where($search_by_column, '=', $user_obj->id); // Get the UserDetail object
+    		} else { // Else refer the Custom ID
+    			$details = UserDetail::where($search_by_column, '=', $search_column_value); // Get the UserDetail object
+    		}
 	        	
 	    	if($details->count() > 0) { // Update Query, if the count is greater than ZERO
 	    		$details = $details->first();
