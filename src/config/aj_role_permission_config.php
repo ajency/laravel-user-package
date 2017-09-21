@@ -11,9 +11,9 @@
 			"roles" => ["superadmin", "admin", "member"],
 			"permissions" => ["add_users", "edit_users", "add_personal", "edit_personal", "add_internal", "edit_internal"],
 			"roles_permissions" => [
-				"roles" => 0, "permissions" => [0, 1, 2, 3, 4, 5],
-				"roles" => 1, "permissions" => [0, 1, 2, 3],
-				"roles" => 2, "permissions" => [2, 3]
+				array("roles" => 0, "permissions" => [0, 1, 2, 3, 4, 5]),
+				array("roles" => 1, "permissions" => [0, 1, 2, 3]),
+				array("roles" => 2, "permissions" => [2, 3])
 			]
 		]
 	*/
