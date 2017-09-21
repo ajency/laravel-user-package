@@ -20,6 +20,7 @@
 	return [
 		"roles" => ['superadmin'],
 		"permissions" => [],
-		"roles_permissions" => ["role" => 0, "permissions" => []]
+		"roles_permissions" => [
+			["role" => 0, "permissions" => []]
         ]
 	];

@@ -24,7 +24,7 @@ class LaravelAjUserServiceProvider extends ServiceProvider {
 
         $this->publishes([
             /* Config files shifted */
-            __DIR__.'/config/aj_user_migrations.php' => config_path('aj_role_permission_config.php'),
+            __DIR__.'/config/aj_role_permission_config.php' => config_path('aj_role_permission_config.php'),
             __DIR__.'/config/aj_user_config.php' => config_path('aj_user_config.php'),
             __DIR__.'/config/aj_user_migrations.php' => config_path('aj_user_migrations.php'),
 
