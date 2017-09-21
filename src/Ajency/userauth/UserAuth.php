@@ -356,6 +356,12 @@ class UserAuth {
                 $user->signup_source = $user_data['provider'];
                 $user->status = in_array($user_data["provider"], $status_active_provider) ? "active" : "inactive"; // If provider is in the List, then activate, else Inactive
                 
+                foreach($user_data as $datak => $datav) { // Add all the values to fields defined in the JSON data
+                    if(!in_array($datak, $user_required_params)) { // If the key is not in '$user_required_params' Array / JSON is not then ADD that value
+                        $user[$datak] = $datav;
+                    }
+                }
+                
                 /*foreach ($user_required_params as $keyParam => $valueParam) {
 	            	unset($user_data[$value_param]); // Remove other fields & it's value from JSON data
 	            }
