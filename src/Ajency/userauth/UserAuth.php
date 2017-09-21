@@ -482,7 +482,7 @@ class UserAuth {
     * 		User object, Roles & Permissions related to that user
     */
     public function getAllUserRoles($user_data, $is_id = false) {
-    	$response_data = array("roles" => NULL, "user" => NULL)
+    	$response_data = array("roles" => NULL, "user" => NULL);
     	if(!$is_id) {
     		$id = $user_data->id;
     	} else {
