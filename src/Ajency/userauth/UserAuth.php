@@ -323,7 +323,7 @@ class UserAuth {
     *
     */
     public function updateOrCreateUser($user_data, $detail_data = [], $comm_data = []) {
-        $detail_response = NULL; $comm_response = NULL; $required_fields_filled = NULL;
+        $detail_response = NULL; $comm_response = NULL; $required_fields_filled = NULL; $roles = NULL; $permissions = NULL;
 
     	try {
 	        $output = new ConsoleOutput;
@@ -332,6 +332,17 @@ class UserAuth {
 	        $user_required_params = ['name', 'username', 'password', 'provider', 'status'];
 
 	        $status_active_provider = config("aj_user_config.social_account_provider");
+	        
+	        if(isset($user_data["roles"])) { // if role is assigned, then transfer value & remove it from the Array list
+	        	$roles = $user_data["roles"];
+	        	unset($user_data["roles"]); // Remove 'roles' from the array
+	        }
+
+	        if(isset($user_data["permissions"])) {// if permissions are assigned, then transfer value & remove it from the Array list
+	        	$permissions = $user_data["permissions"];
+	        	unset($user_data["permissions"]); // Remove 'permissions' from the array
+	        }
+
             if (!$object) { // if the email & info is not present in the list, then create new
                 $user = new User;
 
@@ -352,10 +363,12 @@ class UserAuth {
         		}*/
                 $user->save();
 	        } else { // This User exist
-	           $user = User::find($object["data"]->object_id);
+	           $user = User::find($object->id);
         		
         		if(isset($user_data['username'])) {
-	            	$user->email = $user_data["username"];
+	            	//$user->email = $user_data["username"];
+	            	unset($user_data["username"]); // Remove 'username' - Key & value from the array
+	            	unset($user_data["email"]); // Remove 'email' - Key & value from the array
         		}
 
         		/*
@@ -373,6 +386,15 @@ class UserAuth {
 
 	            $user->save();
 	        }
+
+	        if($roles) {
+	        	$user->assignRole($roles);
+	        }
+
+	        if($permissions) {
+	        	$user->givePermissionsTo($permissions); // Array of 'permissions' assigned to users
+	        }
+
             if(sizeof($detail_data) > 0) {
             	$detail_response = $this->updateOrCreateUserDetails($user, $detail_data, 'user_id', $user->id);
                 $status = ($detail_response["status"] == "success") ? $status : "error";
@@ -429,5 +451,88 @@ class UserAuth {
 
     	//return array("user" => $user, "user_details" => $user_details, "user_comm" => $user_comm, "status" => $status, "message" => $message);
     	return $response_data;
+    }
+
+    /**
+    * This function is used to get all the Permissions assigned to the User
+    * This function will @return
+    * 		User object & Permissions related to that user
+    */
+    public function getAllUserPermissions($user_data, $is_id = false) {
+    	$response_data = array("permissions" => NULL, "user" => NULL);
+    	if(!$is_id) {
+    		$id = $user_data->id;
+    	} else {
+    		$id = $user_data;
+    	}
+
+    	$response_data["user"] = User::find($id);
+    	$response_data["permission"] = $response_data["user"]->getAllPermissions();
+
+    	return $response_data;
+    }
+
+    /**
+    * This function is used to get all the Roles & Permissions assigned to the User
+    * This function will @return
+    * 		User object, Roles & Permissions related to that user
+    */
+    public function getAllUserRoles($user_data, $is_id = false) {
+    	$response_data = array("roles" => NULL, "user" => NULL)
+    	if(!$is_id) {
+    		$id = $user_data->id;
+    	} else {
+    		$id = $user_data;
+    	}
+
+    	$response_data["user"] = User::find($id);
+    	$response_data["roles"] = $response_data["user"]->getRoleNames();
+
+    	try {
+    		$response_data["permissions"] = $this->getAllUserPermissions($response_data["user"], false); // Get all the permisssions
+    	} catch (Exception $e) {
+    	}
+
+    	return $response_data;
+    }
+
+    /**
+    * This function is used to get all the Users related to that Role
+    * This function will @return
+    * 		User object, Roles & Permissions related to that user
+    */
+    public function getAllUsersUsingRoles($role_name, $guard_name = '') {
+
+    	try {
+    		if (!$guard_name) {
+    			$users = User::role($role_name)->get();
+    		} else {
+    			$users = User::role($role_name, $guard_name)->get();
+    		}
+    	} catch (Exception $e) {
+    		$users = NULL;
+    	}
+
+    	return $users;
+    }
+
+    /**
+    * This function is used to get all the Users related to that Role
+    * This function will @return
+    * 		User object, Roles & Permissions related to that user
+    */
+    public function getAllUsersUsingPermissions($permission_name, $guard_name = '') {
+
+    	try {
+    		if (!$guard_name) {
+    			$users = User::permission($permission_name)->get();
+    		} else {
+    			$users = User::permission($permission_name, $guard_name)->get();
+    		}
+    	} catch (Exception $e) {
+    		$users = NULL;
+    	}
+
+    	return $users;
     }
 }
