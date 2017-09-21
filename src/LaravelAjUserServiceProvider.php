@@ -14,6 +14,7 @@ class LaravelAjUserServiceProvider extends ServiceProvider {
     protected $commands = [
         //Commands\CustomMigrations::class,
         "Ajency\User\Commands\CustomMigrationsCommand",
+        "Ajency\User\Commands\GenerateRolesPermissionsCommand",
     ];
 
     public function boot() {
