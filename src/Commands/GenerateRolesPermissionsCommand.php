@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
-class GenerateRoles extends Command
+class GenerateRolesPermissionsCommand extends Command
 {
     /**
      * The name and signature of the console command.
