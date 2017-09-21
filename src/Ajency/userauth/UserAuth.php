@@ -333,7 +333,7 @@ class UserAuth {
 	        $output = new ConsoleOutput;
 	        $object = $this->checkIfUserExists($user_data); // Check if the EMail ID exist
             $status = "success";
-	        $user_required_params = ['name', 'username', 'password', 'provider', 'status'];
+	        $user_required_params = ['name', 'username', 'email', 'password', 'provider', 'status'];
 
 	        $status_active_provider = config("aj_user_config.social_account_provider");
 	        
@@ -361,7 +361,7 @@ class UserAuth {
                         $user[$datak] = $datav;
                     }
                 }
-                
+
                 /*foreach ($user_required_params as $keyParam => $valueParam) {
 	            	unset($user_data[$value_param]); // Remove other fields & it's value from JSON data
 	            }
