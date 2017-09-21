@@ -1,14 +1,18 @@
 # Ajency Laravel User Authentication Package
 
-- Version 1.5
-- Updated on 15 Sept 2017
+- Version 2.1
+- Updated on 21 Sept 2017
 
 ## Description
 Contains Email Signup &amp; Social Auth, generating User Details (User Meta), User Communications Table &amp; Alter of Users Table with columns defined by user.
 
 ## Installation &amp; Configuration
-1. Install Socialite by  <br/>
+1. Install Socialite & Spatie/laravel-permission by  <br/>
 	> composer require laravel/socialite
+	> composer require spatie/laravel-permission
+
+	### Note: Spatie needs Laravel 5.4 or higher & PHP 7.0
+	Please refer https://github.com/spatie/laravel-permission for Setting up Spatie/laravel-permission
 
 2. Then in config/app.php, <br/>
 
@@ -16,12 +20,23 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
     	// Other service providers...
 
     	Laravel\Socialite\SocialiteServiceProvider::class,
+    	Spatie\Permission\PermissionServiceProvider::class,
 	],
 
 	'aliases' => [
 		...
 		'Socialite' => Laravel\Socialite\Facades\Socialite::class,
 	],
+
+	You can publish the migration with:
+
+	php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider" --tag="migrations"
+	After the migration has been published you can create the role- and permission-tables by running the migrations:
+
+	php artisan migrate
+	You can publish the config file with:
+
+	php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider" --tag="config"
 
 3. Create a folder '/packages/ajency/user/' under root Laravel project.
 4. Clone this repo under the recently created folder.
