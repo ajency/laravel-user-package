@@ -240,6 +240,9 @@ class UserAuth {
             		]);*/
 
             		// unset($data[$type]); // Remove the Email / Contact from the 
+            		$comm->type = ($type == "contact") ? (isset($data["contact_type"]) ? $data["contact_type"]: "mobile") : $type; 
+            		unset($data["contact_type"]); // Remove 'contact_type' from the List
+                    
             		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
                         $output->writeln($datak);
             			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
