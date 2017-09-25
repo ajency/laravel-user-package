@@ -240,12 +240,24 @@ class UserAuth {
             		]);*/
 
             		// unset($data[$type]); // Remove the Email / Contact from the 
-            		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
-                        $output->writeln($datak);
-            			if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
-            				$comm[$datak] = $datav;
-            			}
-            		}
+            		$comm->type = ($type == "contact") ? (isset($data["contact_type"]) ? $data["contact_type"]: "mobile") : $type; 
+                    unset($data["contact_type"]); // Remove 'contact_type' from the List
+                    
+                    if($type == "contact") { // IF the dataType is Contact
+                        // checkIfUserExists($dataContact);
+                        $comm_check = UserCommunication::where('value','=',$data['contact'])->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
+
+                        if(!$comm_check) { // If NULL, then
+                            $comm->value = $data['contact']; // Update the Contact number
+                            $comm->country_code = isset($data['country_code']) ? $data["country_code"] : "+91"; // Add the country code
+                        }
+                    }
+
+                    foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
+                        if(!in_array($datak, $types)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
+                            $comm[$datak] = $datav;
+                        }
+                    }
 
                     $comm->save();
             	} else { // Insert Query
@@ -254,7 +266,10 @@ class UserAuth {
 	                $comm->object_type = isset($data["object_type"]) ? $data["object_type"] : 'App\User';
 
 	                // If type == contact then ("contact_type" exist then $data["contact_type"] else "mobile") Else "Email" / $type
-	                $comm->type = ($type == "contact") ? (isset($data["contact_type"]) ? $data["contact_type"]: "mobile") : $type; 
+	                $comm->type = ($type == "contact") ? (isset($data["contact_type"]) ? $data["contact_type"]: "mobile") : $type;
+                    if($type == "contact") { // If the dataType is Contact
+                        $comm->country_code = isset($data['country_code']) ? $data["country_code"] : "+91";
+                    }
 	                $comm->value = $data[$type];
 	                
 	                $comm->is_primary = isset($data["is_primary"]) ? $data['is_primary'] : false;
@@ -388,10 +403,15 @@ class UserAuth {
 	             $user->status = isset($user_data["status"]) ? $user_data["status"] : in_array($user_data["provider"], $status_active_provider) ? "active" : "inactive";
 	            */
 
+                /*if(isset($user_data["password"])) { // If Password field is passed, then Hash the password
+                    $user_data["password"] = Hash::make($user_data["password"]);
+                }*/
+
 	            foreach($user_data as $datak => $datav) { // Update all the fields defined in the JSON data
-        			if(!in_array($datak, $user_required_params)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
+        			$user[$datak] = $datav;
+                    /*if(!in_array($datak, $user_required_params)) { // If the key in Array / JSON is not Email or Contact, then UPDATE that value of that Email or Contact
         				$user[$datak] = $datav;
-        			}
+        			}*/
         		}
 
 	            $user->save();

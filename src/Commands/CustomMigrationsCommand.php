@@ -118,13 +118,18 @@ class CustomMigrationsCommand extends Command {
                     array("column" => "object_type", "type" => "string", "size" => 50, "nullable" => true),
                     array("column" => "object_id", "type" => "integer", "nullable" => true),
                     array("column" => "type", "type" => "string", "size" => 100, "nullable" => true, "comment" => "Email / Landline / Mobile"),
+                    array("column" => "country_code", "type" => "string", "size" => 250, "nullable" => true), // New column Country - Code
                     array("column" => "value", "type" => "string", "size" => 250, "nullable" => true),
                     array("column" => "is_primary", "type" => "boolean", "default" => 0),
                     array("column" => "is_communication", "type" => "boolean", "default" => 0),
                     array("column" => "is_verified", "type" => "boolean", "default" => 0),
                     array("column" => "is_visible", "type" => "boolean", "default" => 0),
                 ]
-            )
+            ),
+            // array("table" => "user_communications", "status" => "alter", "columns" => [
+            //         array("column" => "country_code", "type" => "string", "size" => 250, "nullable" => true),
+            //     ]
+            // )
         ];
 
         foreach (config('aj_user_migrations') as $tableKey => $tableVal) {
