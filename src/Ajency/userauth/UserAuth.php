@@ -23,7 +23,7 @@ class UserAuth {
 	* using "username", we verify in the User table.
 	* If the User object is found, then the object is returned, else NULL
 	*/
-	public function checkIfUserExists($data) {//, $getObject=false) {
+	public function checkIfUserExists($data, $other_object=false) {//, $getObject=false) {
         $user = NULL;
         
         try {
@@ -57,7 +57,11 @@ class UserAuth {
             }
         */
         
-        return $user;
+        if($other_object) {
+            return array("user" => $user, "comm" => $comm);
+        } else {
+            return $user;
+        }
     }
 
     /**
@@ -251,6 +255,12 @@ class UserAuth {
                             $comm->value = $data['contact']; // Update the Contact number
                             $comm->country_code = isset($data['country_code']) ? $data["country_code"] : "+91"; // Add the country code
                         }
+                    } else if ($type == "email") {
+                        $comm_check = UserCommunication::where('value','=',$data['email'])->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
+
+                        if(!$comm_check) { // If NULL, then
+                            $comm->value = $data['email']; // Update the Contact number
+                        }
                     }
 
                     foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
@@ -357,7 +367,7 @@ class UserAuth {
 	        	unset($user_data["roles"]); // Remove 'roles' from the array
 	        }
 
-	        if(isset($user_data["permissions"])) {// if permissions are assigned, then transfer value & remove it from the Array list
+            if(isset($user_data["permissions"])) {// if permissions are assigned, then transfer value & remove it from the Array list
 	        	$permissions = $user_data["permissions"];
 	        	unset($user_data["permissions"]); // Remove 'permissions' from the array
 	        }
@@ -366,7 +376,7 @@ class UserAuth {
                 $user = new User;
 
                 $user->name = $user_data["name"];
-	            $user->email = $user_data["username"];
+                $user->email = $user_data["username"];
                 $user->password = (isset($user_data["password"])) ? Hash::make($user_data["password"]) : Hash::make(str_random(10));
                 $user->signup_source = $user_data['provider'];
                 $user->status = in_array($user_data["provider"], $status_active_provider) ? "active" : "inactive"; // If provider is in the List, then activate, else Inactive
@@ -390,7 +400,7 @@ class UserAuth {
 	        } else { // This User exist
 	           $user = User::find($object->id);
         		
-        		if(isset($user_data['username'])) {
+                if(isset($user_data['username'])) {
 	            	//$user->email = $user_data["username"];
 	            	unset($user_data["username"]); // Remove 'username' - Key & value from the array
 	            	unset($user_data["email"]); // Remove 'email' - Key & value from the array
