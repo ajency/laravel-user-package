@@ -591,12 +591,19 @@ class UserAuth {
     *   < UserCommunication object >
     */
     public function getPrimanyUsersUsingContact($contact_list = [], $contact_type = 'email', $is_primary = 'none') {
-        $user_comm = UserCommunication::where('type', $contact_type)->wherein('value', $contact_list);
+        $user_comm = null;
+        try {
+            $user_comm = UserCommunication::where('type', $contact_type)->wherein('value', $contact_list);
 
-        if(in_array($is_primary, ['true', 'false', '1', '0', false])) { // Is primary flag value is added, then
-            $user_comm = $user_comm->where('is_primary', $is_primary);
+            if(in_array($is_primary, ['true', 'false', '1', '0', false])) { // Is primary flag value is added, then
+                $user_comm = $user_comm->where('is_primary', $is_primary);
+            }
+
+            $user_comm = $user_comm->get();
+        } catch (Exception $e) {
+            $user_comm = null;
         }
 
-        return $user_comm->get();
+        return $user_comm;
     }
 }
