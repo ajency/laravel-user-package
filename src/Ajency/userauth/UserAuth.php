@@ -351,7 +351,7 @@ class UserAuth {
     /**
     *
     */
-    public function updateOrCreateUser($user_data, $detail_data = [], $comm_data = []) {
+    public function updateOrCreateUser($user_data, $detail_data = [], $comm_data = [], $append_role = false, $append_permission = false) {
         $detail_response = NULL; $comm_response = NULL; $required_fields_filled = NULL; $roles = NULL; $permissions = NULL;
 
     	try {
@@ -428,11 +428,19 @@ class UserAuth {
 	        }
 
 	        if($roles) {
-	        	$user->assignRole($roles);
+                if($append_role) { // If True, then Add new role to the list of old Roles
+	        	  $user->assignRole($roles);
+                } else { // Delete old role & assign new role
+                    $user->syncRoles($roles);
+                }
 	        }
 
 	        if($permissions) {
-	        	$user->givePermissionsTo($permissions); // Array of 'permissions' assigned to users
+                if($append_permission) { // If True, then Add new Permission to the list of old Permissions
+                    $user->givePermissionTo($permissions); // Array of 'permissions' assigned to the User
+                } else {
+                    $user->syncPermissions($permissions); // Array or single permission assigned to the User
+                }
 	        }
 
             if(sizeof($detail_data) > 0) {
@@ -574,5 +582,21 @@ class UserAuth {
     	}
 
     	return $users;
+    }
+
+    /**
+    * This function will get all the user-Data if the contact passed is primary
+    *
+    * This function will @return
+    *   < UserCommunication object >
+    */
+    public function getPrimanyUsersUsingContact($contact_list = [], $contact_type = 'email', $is_primary = 'none') {
+        $user_comm = UserCommunication::where('type', $contact_type)->wherein('value', $contact_list);
+
+        if(in_array($is_primary, ['true', 'false', '1', '0', false])) { // Is primary flag value is added, then
+            $user_comm = $user_comm->where('is_primary', $is_primary);
+        }
+
+        return $user_comm->get();
     }
 }
