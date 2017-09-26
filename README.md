@@ -306,7 +306,7 @@ Now you can run the migrations and it should work.
 		- getSocialData(<user_data>, $provider); // $provider -> ['email_signup', 'google', 'facebook', .....]
 	- Under UserAuth
 		- validateUserLogin($social_data["user"], $provider);
-		- updateOrCreateUser(<user_data_json>, <user_detail_data_json>, <user_comm_data_json>)
+		- updateOrCreateUser(<user_data_json>, <user_detail_data_json>, < user_comm_data_json>, $append_role = < true / false => Default => false >, $append_permission = < true / false => Default => false )
 		- getUserData(<user_data_json>, is_id=<true/false>)
 		- updateOrCreateUserComm(<user_object - DB object>, <user_comm_data_json>) // Create or Update the UserCommunication Table
 		- updateOrCreateUserDetails(<user_object - DB object>, <'user_details_data_json'>, search_by_column='user_id column', search_by_column_value='<integer / string value>') // Create or Update UserDetail Table
@@ -314,7 +314,7 @@ Now you can run the migrations and it should work.
 		- getAllUsergetAllUserRoles(< user_obj >, $is_id = false) // This function will return an array("user" => < user_object >, "roles" => [ 'all the roles assigned to the user' ], "permissions" => [ 'all the permissions assigned to the user' ])
 		- getAllUsersUsingRoles($role_name = < String >, $guard_name = < String >) // This function will return all the < User object > i.e. Users having that Role
 		- getAllUsersUsingPermissions($permission_name = < String >, $guard_name = < String >) // This function will return all the < User object > i.e. Users having that Permission
-
+		- getPrimanyUsersUsingContact($contact_list = [], $contact_type = <mobile / landline / email => Default : email >, $is_primary = < true / false / 'none' => Default: 'none') //
 2. Accessing the above functions: <br/>
 Define <br/>
 > use Ajency\User\Ajency\socialaccount\SocialAccountService;
