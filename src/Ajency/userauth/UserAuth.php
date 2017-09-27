@@ -599,7 +599,7 @@ class UserAuth {
                 $user_comm = $user_comm->where('is_primary', $is_primary);
             }
 
-            $user_comm = $user_comm->get();
+            //$user_comm = $user_comm->get();
         } catch (Exception $e) {
             $user_comm = null;
         }
