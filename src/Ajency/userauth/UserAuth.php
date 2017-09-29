@@ -235,7 +235,9 @@ class UserAuth {
             foreach ($types as $key => $type) { // Loop through Communication types
                 $comm = UserCommunication::where('value','=',$data[$type]); // Get the UserComm object
             	if($comm->count() > 0) { // Update Query, if the count is greater than ZERO
-            		$comm = $comm->first();
+            		//$output->writeln("update");
+
+                    $comm = $comm->first();
             		/*$comm = $comm->update([
             			'is_primary' => $data["is_primary"], 
             			'is_communication' => $data["is_communication"], 
@@ -272,10 +274,11 @@ class UserAuth {
                     $comm->save();
             	} else { // Insert Query
 	                $comm = new UserCommunication;
+                    //$output->writeln("insert");
 	                $comm->object_id = $user_obj->id;
 	                $comm->object_type = isset($data["object_type"]) ? $data["object_type"] : 'App\User';
 
-	                // If type == contact then ("contact_type" exist then $data["contact_type"] else "mobile") Else "Email" / $type
+                    // If type == contact then ("contact_type" exist then $data["contact_type"] else "mobile") Else "Email" / $type
 	                $comm->type = ($type == "contact") ? (isset($data["contact_type"]) ? $data["contact_type"]: "mobile") : $type;
                     if($type == "contact") { // If the dataType is Contact
                         $comm->country_code = isset($data['country_code']) ? $data["country_code"] : "+91";
@@ -283,10 +286,10 @@ class UserAuth {
 	                $comm->value = $data[$type];
 	                
 	                $comm->is_primary = isset($data["is_primary"]) ? $data['is_primary'] : false;
-	                $comm->is_communication = isset($data["is_communication"]) ? $data['is_communication'] : false;
+                    $comm->is_communication = isset($data["is_communication"]) ? $data['is_communication'] : false;
 	                $comm->is_verified = isset($data["is_verified"]) ? $data['is_verified'] : false;
 	                $comm->is_visible = isset($data["is_visible"]) ? $data['is_visible'] : false;
-	    
+                    
 	                $comm->save();
             	}
             }
