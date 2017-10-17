@@ -14,6 +14,7 @@ class LaravelAjUserServiceProvider extends ServiceProvider {
     protected $commands = [
         //Commands\CustomMigrations::class,
         "Ajency\User\Commands\CustomMigrationsCommand",
+        "Ajency\User\Commands\GenerateRolesPermissionsCommand",
     ];
 
     public function boot() {
@@ -23,7 +24,8 @@ class LaravelAjUserServiceProvider extends ServiceProvider {
         // $this->loadRoutesFrom(__DIR__.'/routes.php'); -> This will merge the routes from the Package to the Application of the routes
 
         $this->publishes([
-            /* Migrations file shifted */
+            /* Config files shifted */
+            __DIR__.'/config/aj_role_permission_config.php' => config_path('aj_role_permission_config.php'),
             __DIR__.'/config/aj_user_config.php' => config_path('aj_user_config.php'),
             __DIR__.'/config/aj_user_migrations.php' => config_path('aj_user_migrations.php'),
 

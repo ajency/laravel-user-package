@@ -10,6 +10,26 @@ use App\UserCommunication;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 class SocialAccountService {
+    /**
+    * This function receives the Socialite User Object (post Social account Login) & 
+    * returns an Array (or JSON) with keys: "user" & "user_comm".
+    * Key "user" will have an array with values for "username", "name", "email", "provider", "password" (Randomly generated string & then Hashed).
+    * Key "user_comm" will have an array with values for "email", "is_primary", "is_communication", "is_verified", "is_visible" where in the last 4 fields are Boolean & is set to True,
+    * and the other possible fields are "contact" & "contact_type" which will contain Contact Number & Contact Number type (mobile / telephone)
+    *
+    * This function @return
+    *   array(
+    *       "user" => array(
+    *           "username" => <Social account ID>@<Email_DOmain_in_Config><Social login provider>.in, // -> Provider -> google, facebook, twitter, linkedin, github, bitbucket
+    *            "name" => <user's name>, "password" => Hash(random(10)),
+    *           "provider" => <Social login provider>, "email" => <Social account Login Email>
+    *       ),
+    *       "user_comm" => array(
+    *           "email" => <Social account Login Email>, "contact" => +<country code> <contact no>, "contact_type" => <mobile / telephone>,
+    *           "is_primary" => <true \ false>, "is_communication" => <true \ false>, "is_verified" => <true \ false>, "is_visible" => <true \ false>
+    *       )
+    *    )
+    */
     public function getSocialData(ProviderUser $providerUser, $provider) {
         $email_domain = config('aj_user_config.social_email_domain');
 
@@ -17,7 +37,7 @@ class SocialAccountService {
             "user" => array(
                 "username" => ((string)$providerUser->id).'@'.$email_domain.strtolower($provider).".in", 
                 "name" => $providerUser->name, 
-                "password" => Hash::make(str_random(10)), 
+                "password" => str_random(10),
                 "provider" => $provider,
                 "email" => $providerUser->email,
             ),

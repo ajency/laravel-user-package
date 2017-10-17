@@ -1,14 +1,18 @@
 # Ajency Laravel User Authentication Package
 
-- Version 1.4
-- Updated on 12 Sept 2017
+- Version 2.1
+- Updated on 21 Sept 2017
 
 ## Description
 Contains Email Signup &amp; Social Auth, generating User Details (User Meta), User Communications Table &amp; Alter of Users Table with columns defined by user.
 
 ## Installation &amp; Configuration
-1. Install Socialite by  <br/>
+1. Install Socialite & Spatie/laravel-permission by  <br/>
 	> composer require laravel/socialite
+	> composer require spatie/laravel-permission
+
+	### Note: Spatie needs Laravel 5.4 or higher & PHP 7.0
+	Please refer https://github.com/spatie/laravel-permission for Setting up Spatie/laravel-permission
 
 2. Then in config/app.php, <br/>
 
@@ -16,12 +20,25 @@ Contains Email Signup &amp; Social Auth, generating User Details (User Meta), Us
     	// Other service providers...
 
     	Laravel\Socialite\SocialiteServiceProvider::class,
+    	Spatie\Permission\PermissionServiceProvider::class,
 	],
 
 	'aliases' => [
 		...
 		'Socialite' => Laravel\Socialite\Facades\Socialite::class,
 	],
+
+	You can publish the migration with:
+
+	> php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider" --tag="migrations"
+
+	After the migration has been published you can create the role and permission-tables by running the migrations:
+
+	> php artisan migrate
+
+	You can publish the config file with:
+
+	> php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider" --tag="config"
 
 3. Create a folder '/packages/ajency/user/' under root Laravel project.
 4. Clone this repo under the recently created folder.
@@ -149,9 +166,60 @@ This will generate the Models & migrations for new table & alter the old users t
 11. Then run <br/>
 	> php artisan migrate<br/>
 
-<b>Caution</b> : Laravel 5.4 has an issue with migrations regarding String length, please check this before running a migration on 5.4 version<br/>
+<b>Caution</b> : Laravel 5.4 has an issue with migrations regarding String length if your Database is MySQL, so please check this before running a migration on 5.4 or above version<br/>
+If you get an error then open app/Providers/AppServiceProvider.php, and add <br/>
+	> public function boot()
+    {
+        <b>Schema::defaultStringLength(191);</b>b>
+    }
 
-12. Set your routes & other configurations in 'aj_user_config.php'.<br/>
+or open config/database.php & edit it <br/>
+
+> return [
+	
+	...
+
+	'connections' => [
+		...
+		'mysql' => [
+			...
+			'charset' => 'utf8',
+			'collation' => 'utf8_unicode_ci',
+			...
+		],
+	]
+]
+
+Now you can run the migrations and it should work.
+
+12. Open 'aj_user_permission_config.php' file & add/edit the columns that are needed for your Roles, Permissions & mapping between Permission & roles. <br/>
+	Here are few configurations available
+
+	> [
+		"roles" ->  Array of Role names to be generated,
+			"permissions" -> Array of Permission names to be generated
+			"roles_permissions" -> [Array having
+				array("role" => < Array index of the role in "roles", "permissions" => [array of <indexes of permssion> from "permissions"])
+			]
+		]
+			
+		For Example:
+		[
+			"roles" => ["superadmin", "admin", "member"],
+			"permissions" => ["add_users", "edit_users", "add_personal", "edit_personal", "add_internal", "edit_internal"],
+			"roles_permissions" => [
+				"roles" => 0, "permissions" => [0, 1, 2, 3, 4, 5],
+				"roles" => 1, "permissions" => [0, 1, 2, 3],
+				"roles" => 2, "permissions" => [2, 3]
+			]
+		]
+
+	Then run,
+	> php artisan aj_user:role-permissions
+
+
+
+13. Set your routes & other configurations in 'aj_user_config.php'.<br/>
 	Possible options available are: <br/>
 	[
 
@@ -172,7 +240,7 @@ This will generate the Models & migrations for new table & alter the old users t
 		]
 	]
 
-13. Now update the 'config/services.php', with the following: <br/>
+14. Now update the 'config/services.php', with the following: <br/>
 	
 	return [
 		...
@@ -215,7 +283,7 @@ This will generate the Models & migrations for new table & alter the old users t
 
 	Similar can be done for <b>twitter</b>, <b>linkedin</b>, <b>github</b> or <b>bitbucket</b>.
 
-14. Update the routes/web.php with this <br/>
+15. Update the routes/web.php with this <br/>
 
 	Route::group(['namespace' => 'Ajency'], function() {
 
@@ -234,13 +302,19 @@ This will generate the Models & migrations for new table & alter the old users t
 
 ## Package Functions that are available at your disposal
 1. Functions available:
-	- getSocialData(<user_data>, $provider); // $provider -> ['email_signup', 'google', 'facebook', .....]
-	- validateUserLogin($social_data["user"], $provider);
-	- updateOrCreateUser(<user_data_json>, <user_detail_data_json>, <user_comm_data_json>)
-	- getUserData(<user_data_json>, is_id=<true/false>)
-	- updateOrCreateUserComm(<user_object - DB object>, <user_comm_data_json>) // Create or Update the UserCommunication Table
-	- updateOrCreateUserDetails(<user_object - DB object>, <'user_details_data_json'>, search_by_column='user_id column', search_by_column_value='<integer / string value>') // Create or Update UserDetail Table
-
+	- Under SocialAccountService
+		- getSocialData(<user_data>, $provider); // $provider -> ['email_signup', 'google', 'facebook', .....]
+	- Under UserAuth
+		- validateUserLogin($social_data["user"], $provider);
+		- updateOrCreateUser(<user_data_json>, <user_detail_data_json>, < user_comm_data_json>, $append_role = < true / false => Default => false >, $append_permission = < true / false => Default => false )
+		- getUserData(<user_data_json>, is_id=<true/false>)
+		- updateOrCreateUserComm(<user_object - DB object>, <user_comm_data_json>) // Create or Update the UserCommunication Table
+		- updateOrCreateUserDetails(<user_object - DB object>, <'user_details_data_json'>, search_by_column='user_id column', search_by_column_value='<integer / string value>') // Create or Update UserDetail Table
+		- getAllUserPermissions(< user_obj >, $is_id = false) // This function will return an array("user" => < user_object >, "permissions" => [ 'all the permissions assigned to the user' ])
+		- getAllUsergetAllUserRoles(< user_obj >, $is_id = false) // This function will return an array("user" => < user_object >, "roles" => [ 'all the roles assigned to the user' ], "permissions" => [ 'all the permissions assigned to the user' ])
+		- getAllUsersUsingRoles($role_name = < String >, $guard_name = < String >) // This function will return all the < User object > i.e. Users having that Role
+		- getAllUsersUsingPermissions($permission_name = < String >, $guard_name = < String >) // This function will return all the < User object > i.e. Users having that Permission
+		- getPrimanyUsersUsingContact($contact_list = [], $contact_type = <mobile / landline / email => Default : email >, $is_primary = < true / false / 'none' => Default: 'none') //
 2. Accessing the above functions: <br/>
 Define <br/>
 > use Ajency\User\Ajency\socialaccount\SocialAccountService;
