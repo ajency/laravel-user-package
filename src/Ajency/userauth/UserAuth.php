@@ -221,7 +221,7 @@ class UserAuth {
     /**
     *
     */
-    public function updateOrCreateUserComm($user_obj, $data) {
+    public function updateOrCreateUserComm($user_obj, $data, $user_comm_id='') {
     	$response_data = [];
 
         $output = new ConsoleOutput;
@@ -233,7 +233,12 @@ class UserAuth {
             (isset($data['contact']) && isset($data['contact']) && $data['contact']) ? array_push($types, 'contact') : ''; // If contact field exist & the value is not NULL
 
             foreach ($types as $key => $type) { // Loop through Communication types
-                $comm = UserCommunication::where('value','=',$data[$type]); // Get the UserComm object
+                if(strlen($user_comm_id) > 0) {
+                    $comm = UserCommunication::where("id", $user_comm_id);
+                } else {
+                    $comm = UserCommunication::where('value','=',$data[$type]); // Get the UserComm object
+                }
+
             	if($comm->count() > 0) { // Update Query, if the count is greater than ZERO
             		//$output->writeln("update");
 
