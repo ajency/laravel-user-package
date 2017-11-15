@@ -144,8 +144,12 @@ class UserAuth {
     	}
 
         if(sizeof($fields_not_filled) <= 0) {
+			$user->has_required_fields_filled = true;
+			$user->save();
             return array("filled_required" => true, "fields_to_be_filled" => $fields_not_filled);
         } else {
+			$user->has_required_fields_filled = false;
+			$user->save();
             return array("filled_required" => false, "fields_to_be_filled" => $fields_not_filled); // Array of all the Fields not Filled
         }
     }
