@@ -25,7 +25,7 @@ class UserAuth {
 	*/
 	public function checkIfUserExists($data, $other_object=false) {//, $getObject=false) {
         $user = NULL;
-        
+
         try {
             if (isset($data["email"])) {
                 $comm = UserCommunication::where('value','=',$data['email'])->first(); // Check if this email ID exist in the User Communication DB
@@ -37,7 +37,7 @@ class UserAuth {
                 $user = User::where('email', '=', $data['username'])->first(); // Check if this Username exist in the User DB
             }*/
             if($user == NULL && isset($data["username"])) {
-               $user = User::where('email', '=', $data['username'])->first(); // Check if this Username exist in the User DB 
+               $user = User::where('email', '=', $data['username'])->first(); // Check if this Username exist in the User DB
             }
         } catch (Exception $e) {
             $user = NULL;
@@ -56,7 +56,7 @@ class UserAuth {
                 return $exist;
             }
         */
-        
+
         if($other_object) {
             return array("user" => $user, "comm" => $comm);
         } else {
@@ -69,9 +69,9 @@ class UserAuth {
     * For Social signup/signin accounts like Google, Facebook, etc.. the response will be True, and
     * for email SignIn, the Email is verified, as in the email is a valid & the domain in the Email address exist, if it exist then this email is used to check if the User exist &
     * the password entered is matching. If it is Matching, then the User is a Valid / Authentic user.
-    * For email Signup, the flow is similar to SignIn, except that the password is not verified as the account doesn't exist, but if the Email & the domain in the email is valid, then the 
+    * For email Signup, the flow is similar to SignIn, except that the password is not verified as the account doesn't exist, but if the Email & the domain in the email is valid, then the
     * Email is assumed to be Valid.
-    * 
+    *
     * This function @return
     * For Social SignIn account, it is TRUE
     * For Email SignUp, it checks if the Email entered is valid & if the Domain in the Email, i.e. xxxxxx@<domain> Ex: xxxxxx@gmail.com & "gmail.com" is a Domain
@@ -109,7 +109,7 @@ class UserAuth {
     }
 
     /**
-	* checkUserFilledRequiredFields(<User_Model_Object>) function is used to check if the reqired fields are filled & 
+	* checkUserFilledRequiredFields(<User_Model_Object>) function is used to check if the reqired fields are filled &
 	* if all the fields are filled with a value, then respond with "filled_required" = True & if 1 or more fields are not filled,
 	* then respond with the list of columns in format [<table1> -> <column1>, <table1> -> <column2>, .....]
 	*
@@ -138,7 +138,7 @@ class UserAuth {
     	    			}
     	    		}
                 } catch (Exception $e) {
-                    
+
                 }
 	    	}
     	}
@@ -180,20 +180,20 @@ class UserAuth {
     * - isValidUser(<user_data>) => Response: True / False
     * - checkUserFilledRequiredFields(<user_object>) => Response: True / False & Columns to be added
 	*
-	* This function @return 
+	* This function @return
 	*	array("user" => <user_object>, "authentic_user" => true/false, "required_fields_filled" => true / false, "status" => 'success' / 'error', "message" => "")
     */
     public function validateUserLogin($data, $provider) { // Validate if User is Authenticated & has all the required fields
         $response_data = [];
 
         $output = new ConsoleOutput;
-        
+
         try {
             $user_object = $this->checkIfUserExists($data);
             $response_data["user"] = $user_object;
 
             $response_data["authentic_user"] = $this->isValidUser($data); // Checks if the User-ID (& password {if it is Email Signup}) entered is matching
-            
+
             if ($user_object && $provider == $user_object->signup_source && $user_object->status == "active") { // If user_object is Received & the Signup source provider is same
                 $response_data["status"] = "success";
                 $response_data["message"] = "account_found";
@@ -244,16 +244,16 @@ class UserAuth {
 
                     $comm = $comm->first();
             		/*$comm = $comm->update([
-            			'is_primary' => $data["is_primary"], 
-            			'is_communication' => $data["is_communication"], 
-            			'is_verified' => $data["is_verified"], 
+            			'is_primary' => $data["is_primary"],
+            			'is_communication' => $data["is_communication"],
+            			'is_verified' => $data["is_verified"],
             			'is_visible' => $data["is_visible"]
             		]);*/
 
-            		// unset($data[$type]); // Remove the Email / Contact from the 
-            		$comm->type = ($type == "contact") ? (isset($data["contact_type"]) ? $data["contact_type"]: "mobile") : $type; 
+            		// unset($data[$type]); // Remove the Email / Contact from the
+            		$comm->type = ($type == "contact") ? (isset($data["contact_type"]) ? $data["contact_type"]: "mobile") : $type;
                     unset($data["contact_type"]); // Remove 'contact_type' from the List
-                    
+
                     if($type == "contact") { // IF the dataType is Contact
                         // checkIfUserExists($dataContact);
                         $comm_check = UserCommunication::where('value','=',$data['contact'])->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
@@ -289,12 +289,12 @@ class UserAuth {
                         $comm->country_code = isset($data['country_code']) ? $data["country_code"] : "+91";
                     }
 	                $comm->value = $data[$type];
-	                
+
 	                $comm->is_primary = isset($data["is_primary"]) ? $data['is_primary'] : false;
                     $comm->is_communication = isset($data["is_communication"]) ? $data['is_communication'] : false;
 	                $comm->is_verified = isset($data["is_verified"]) ? $data['is_verified'] : false;
 	                $comm->is_visible = isset($data["is_visible"]) ? $data['is_visible'] : false;
-                    
+
 	                $comm->save();
             	}
             }
@@ -319,17 +319,17 @@ class UserAuth {
     		} else { // Else refer the Custom ID
     			$details = UserDetail::where($search_by_column, '=', $search_column_value); // Get the UserDetail object
     		}
-	        	
+
 	    	if($details->count() > 0) { // Update Query, if the count is greater than ZERO
 	    		$details = $details->first();
 	    		/*$details = $details->update([
-	    			'is_primary' => $data["is_primary"], 
-	    			'is_communication' => $data["is_communication"], 
-	    			'is_verified' => $data["is_verified"], 
+	    			'is_primary' => $data["is_primary"],
+	    			'is_communication' => $data["is_communication"],
+	    			'is_verified' => $data["is_verified"],
 	    			'is_visible' => $data["is_visible"]
 	    		]);*/
 
-	    		// unset($data[$type]); // Remove the Email / Contact from the 
+	    		// unset($data[$type]); // Remove the Email / Contact from the
 	    		foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
 	    			$details[$datak] = $datav;
 	    		}
@@ -337,7 +337,7 @@ class UserAuth {
 	    		$details->save();
 	    	} else { // Insert Query
 	            $details = new UserDetail;
-	            
+
 	            $details->user_id = $user_obj->id;
 
 				foreach($data as $datak => $datav) { // Update all the fields defined in the JSON data
@@ -346,7 +346,7 @@ class UserAuth {
 
 	            $details->save();
 	    	}
-	        
+
 
 	        $response_data = array("status" => "success", "data" => $details);
     	} catch (Exception $e) {
@@ -369,7 +369,7 @@ class UserAuth {
 	        $user_required_params = ['name', 'username', 'email', 'password', 'provider', 'status'];
 
 	        $status_active_provider = config("aj_user_config.social_account_provider");
-	        
+
 	        if(isset($user_data["roles"])) { // if role is assigned, then transfer value & remove it from the Array list
 	        	$roles = $user_data["roles"];
 	        	unset($user_data["roles"]); // Remove 'roles' from the array
@@ -383,6 +383,11 @@ class UserAuth {
             if (!$object) { // if the email & info is not present in the list, then create new
                 $user = new User;
 
+				// generate an unique ref_id
+				$refId = uniqid();
+				while(User::where('ref_id',$refId)->count() != 0)
+					$refId = uniqid();
+				$user->ref_id = $refId;
                 $user->name = $user_data["name"];
                 $user->email = $user_data["username"];
                 $user->password = (isset($user_data["password"])) ? Hash::make($user_data["password"]) : Hash::make(str_random(10));
@@ -392,7 +397,7 @@ class UserAuth {
                 } else {
                     $user->status = in_array($user_data["provider"], $status_active_provider) ? "active" : "inactive"; // If provider is in the List, then activate, else Inactive
                 }
-                
+
                 foreach($user_data as $datak => $datav) { // Add all the values to fields defined in the JSON data
                     if(!in_array($datak, $user_required_params)) { // If the key is not in '$user_required_params' Array / JSON is not then ADD that value
                         $user[$datak] = $datav;
@@ -411,7 +416,7 @@ class UserAuth {
                 $user->save();
 	        } else { // This User exist
 	           $user = User::find($object->id);
-        		
+
                 if(isset($user_data['username'])) {
 	            	//$user->email = $user_data["username"];
 	            	unset($user_data["username"]); // Remove 'username' - Key & value from the array
@@ -480,7 +485,7 @@ class UserAuth {
     * This function @return
     * 	array("user" => <user_object>, "user_details" => <user_details_object>, "user_comm" => <user_communication_object>)
     */
-    public function getUserData($user_data, $is_id = false) { // Get all the User related details 
+    public function getUserData($user_data, $is_id = false) { // Get all the User related details
 
     	/*$status = "success";
     	$message = "";*/
@@ -496,13 +501,13 @@ class UserAuth {
 	    	}
 
             $response_data["user"] = User::find($id);
-            
+
             try {
-                $response_data["user_details"] = $response_data["user"]->getUserDetails()->get(); // Gets that Specific Data One-to-One Relation		
+                $response_data["user_details"] = $response_data["user"]->getUserDetails()->get(); // Gets that Specific Data One-to-One Relation
 	    	} catch (Exception $e) {
 	    		$response_data["user_details"] = UserDetail::where('user_id', '=', $response_data["user"]->id)->get();
 	    	}
-            
+
             $response_data["user_comm"] = UserCommunication::where([['object_id', '=' , $id], ['object_type', '=', 'App\User']])->get();
             $response_data["required_fields_filled"] = $this->checkUserFilledRequiredFields($response_data["user"]);
     	} catch (Exception $e) {
