@@ -503,9 +503,9 @@ class UserAuth {
             $response_data["user"] = User::find($id);
 
             try {
-                $response_data["user_details"] = $response_data["user"]->getUserDetails()->get(); // Gets that Specific Data One-to-One Relation
+                $response_data["user_details"] = $response_data["user"]->getUserDetails()->first(); // Gets that Specific Data One-to-One Relation
 	    	} catch (Exception $e) {
-	    		$response_data["user_details"] = UserDetail::where('user_id', '=', $response_data["user"]->id)->get();
+	    		$response_data["user_details"] = UserDetail::where('user_id', '=', $response_data["user"]->id)->first();
 	    	}
 
             $response_data["user_comm"] = UserCommunication::where([['object_id', '=' , $id], ['object_type', '=', 'App\User']])->get();
