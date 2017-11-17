@@ -303,7 +303,7 @@ class UserAuth {
             	}
             }
 
-            $response_data = array("status" => "success", "data" => $comm);
+            $response_data = array("status" => "success", "data" => UserCommunication::where([['object_id', '=' , $user_obj->id], ['object_type', '=', 'App\User']])->get());
         } else { // Else required parameters are not passed
         	$response_data = array("status" => "error", "message" => "Please pass the following Required parameters: 'email', 'contact', 'object_id' & 'object_type'.");
         }
