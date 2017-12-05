@@ -234,9 +234,9 @@ class UserAuth {
 
             foreach ($types as $key => $type) { // Loop through Communication types
                 if(strlen($user_comm_id) > 0) {
-                    $comm = UserCommunication::where("id", $user_comm_id);
+                    $comm = UserCommunication::where('object_type','App\\User')->where("id", $user_comm_id);
                 } else {
-                    $comm = UserCommunication::where('value','=',$data[$type]); // Get the UserComm object
+                    $comm = UserCommunication::where('object_type','App\\User')->where('value','=',$data[$type]); // Get the UserComm object
                 }
 
             	if($comm->count() > 0) { // Update Query, if the count is greater than ZERO
@@ -256,14 +256,14 @@ class UserAuth {
                     
                     if($type == "contact") { // IF the dataType is Contact
                         // checkIfUserExists($dataContact);
-                        $comm_check = UserCommunication::where('value','=',$data['contact'])->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
+                        $comm_check = UserCommunication::where('object_type','App\\User')->where('value','=',$data['contact'])->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
 
                         if(!$comm_check) { // If NULL, then
                             $comm->value = $data['contact']; // Update the Contact number
                             $comm->country_code = isset($data['country_code']) ? $data["country_code"] : "+91"; // Add the country code
                         }
                     } else if ($type == "email") {
-                        $comm_check = UserCommunication::where('value','=',$data['email'])->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
+                        $comm_check = UserCommunication::where('object_type','App\\User')->where('value','=',$data['email'])->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
 
                         if(!$comm_check) { // If NULL, then
                             $comm->value = $data['email']; // Update the Contact number
@@ -605,7 +605,7 @@ class UserAuth {
     public function getPrimanyUsersUsingContact($contact_list = [], $contact_type = 'email', $is_primary = 'none') {
         $user_comm = null;
         try {
-            $user_comm = UserCommunication::where('type', $contact_type)->wherein('value', $contact_list);
+            $user_comm = UserCommunication::where('object_type','App\\User')->where('type', $contact_type)->wherein('value', $contact_list);
 
             if(in_array($is_primary, ['true', 'false', '1', '0', false])) { // Is primary flag value is added, then
                 $user_comm = $user_comm->where('is_primary', $is_primary);
