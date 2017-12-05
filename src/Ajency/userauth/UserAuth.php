@@ -28,10 +28,10 @@ class UserAuth {
         
         try {
             if (isset($data["email"])) {
-                $comm = UserCommunication::where('value','=',$data['email'])->first(); // Check if this email ID exist in the User Communication DB
+                $comm = UserCommunication::where('value','=',$data['email'])->where('object_type','App\\User')->first(); // Check if this email ID exist in the User Communication DB
                 $user = $comm ? User::where('id', '=', $comm->object_id)->first() : NULL;
             } else if (isset($data["contact"])) {
-                $comm = UserCommunication::where('value','=',$data['contact'])->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
+                $comm = UserCommunication::where('value','=',$data['contact'])->where('object_type','App\\User')->first(); // Check if this Contact No (Phone No / Landline) exist in the User Communication DB
                 $user = $comm ? User::where('id', '=', $comm->object_id)->first() : NULL;
             } /*else {
                 $user = User::where('email', '=', $data['username'])->first(); // Check if this Username exist in the User DB
