@@ -35,7 +35,7 @@ class LaravelAjUserServiceProvider extends ServiceProvider {
 
             /*__DIR__.'/Models/SocialAccountService.php' => public_path('app/SocialAccountService.php'),*/
 
-            __DIR__.'/Middle/CheckPermissions.php' => app_path('Middleware/CheckPermissions.php'),
+            // __DIR__.'/Middleware/CheckPermissions.php' => app_path('Middleware/CheckPermissions.php'),
         ]);
 
         /* Command to Generate Model & Migration files in Application level */
