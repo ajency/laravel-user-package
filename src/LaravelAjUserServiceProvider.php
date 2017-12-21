@@ -19,7 +19,7 @@ class LaravelAjUserServiceProvider extends ServiceProvider {
 
     public function boot() {
         // $this->loadMigrationsFrom(__DIR__ . '/migrations');
-        
+
         // $this->loadRoutesFrom(__DIR__.'/routes/web.php');
         // $this->loadRoutesFrom(__DIR__.'/routes.php'); -> This will merge the routes from the Package to the Application of the routes
 
@@ -28,12 +28,14 @@ class LaravelAjUserServiceProvider extends ServiceProvider {
             __DIR__.'/config/aj_role_permission_config.php' => config_path('aj_role_permission_config.php'),
             __DIR__.'/config/aj_user_config.php' => config_path('aj_user_config.php'),
             __DIR__.'/config/aj_user_migrations.php' => config_path('aj_user_migrations.php'),
+            __DIR__.'/config/aj_user_middleware_auth.php' => config_path('aj_user_migrations.php'),
 
             /* Controller files shifted */
             __DIR__.'/Controllers/SocialAuthController.php' => app_path('Http/Controllers/Ajency/User/SocialAuthController.php'),
 
             /*__DIR__.'/Models/SocialAccountService.php' => public_path('app/SocialAccountService.php'),*/
 
+            __DIR__.'/Middle/CheckPermissions.php' => app_path('Middleware/CheckPermissions.php'),
         ]);
 
         /* Command to Generate Model & Migration files in Application level */
