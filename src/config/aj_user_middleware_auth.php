@@ -8,7 +8,7 @@
 return [
     // endpoint mapping
     // eg.
-    // 'api/endpoint' => ['permission-1', 'permission-2']
+    // 'endpoint' => ['permission-1', 'permission-2']
 
 
     // ui class mapping
