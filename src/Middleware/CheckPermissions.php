@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace Ajency\User\Middleware;
 
 use Closure;
 
@@ -36,7 +36,7 @@ class CheckPermissions
         if((new AccessPermission)->checkAccessPermissions($endpoint,$userId))
             return $next($request);
         else {
-            return response()->json(["status" => 403, "message" => 'Unauthorised access.']);
+            abort(401,'Unauthorized access.');
         }
     }
 }
